@@ -2,15 +2,13 @@
 
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Lock } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 import Image from "next/image"
 import { useI18n } from "@/i18n/use-i18n" // Import useI18n
-import { useState } from "react" // Import useState
 
 export default function TripPage() {
   const router = useRouter()
   const { t } = useI18n()
-  const [isLocked, setIsLocked] = useState(true) // Começa bloqueado
 
   return (
     <div
@@ -29,13 +27,6 @@ export default function TripPage() {
         <ChevronLeft className="h-6 w-6" />
         {t("back")} {/* Translated "Back" */}
       </Button>
-
-      {/* Overlay de bloqueio */}
-      {isLocked && (
-        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-40">
-          <Lock className="h-24 w-24 text-white animate-pulse" />
-        </div>
-      )}
 
       {/* Container para as janelas dos países, centralizado */}
       <div className="flex flex-wrap justify-center items-center gap-8 p-4 z-30">
