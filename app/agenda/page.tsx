@@ -273,7 +273,7 @@ export default function AgendaPage() {
             <SpeechBubble
               text={teacherTripText}
               buttons={[
-                { label: t("travel_wld", { amount: "2.8" }), onClick: handlePayTrip, variant: "default" },
+                { label: t("travel_wld"), onClick: handlePayTrip, variant: "default" },
                 { label: t("no_dont_want_to_go"), onClick: handleDeclineTrip, variant: "destructive" },
               ]}
               onClose={() => setShowTripSpeech(false)}
