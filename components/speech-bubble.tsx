@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { CardDescription } from "@/components/ui/card"
 import { CardContent } from "@/components/ui/card"
@@ -18,13 +17,14 @@ interface SpeechBubbleProps {
   positionClasses?: string // Nova prop para controlar o posicionamento
 }
 
-const SpeechBubble = ({
+// Alterado para exportação padrão
+export default function SpeechBubble({
   text,
   delay = 50,
   buttons,
   onClose,
   positionClasses = "bottom-4 left-1/4", // Valor padrão, será sobrescrito
-}: SpeechBubbleProps) => {
+}: SpeechBubbleProps) {
   const [displayedText, setDisplayedText] = useState("")
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTextFullyDisplayed, setIsTextFullyDisplayed] = useState(false)
@@ -79,5 +79,3 @@ const SpeechBubble = ({
     </Card>
   )
 }
-
-export default SpeechBubble
