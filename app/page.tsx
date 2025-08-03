@@ -26,7 +26,7 @@ export default function WorldAcademyWelcome() {
     localStorage.setItem("worldAcademyUserName", userNameInput) // Salva o nome do usuário
 
     if (!MiniKit.isInstalled()) {
-      console.error("World App (MiniKit) is not installed.")
+      console.error("World App (MiniKit) is not installed. Proceeding without wallet connection.")
       // Você pode adicionar um fallback ou mensagem para o usuário aqui
       router.push("/agenda") // Navega mesmo sem verificação se o app não estiver instalado
       return
@@ -45,34 +45,36 @@ export default function WorldAcademyWelcome() {
 
       if (finalPayload.status === "error") {
         console.error("World ID verification error:", finalPayload)
-        // Não retorna aqui, continua para a navegação
-      } else {
-        // Enviar a prova para o backend para verificação
-        const verifyResponse = await fetch("/api/verify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            payload: finalPayload as ISuccessResult,
-            action: "welcomewacademy",
-            signal: userNameInput,
-          }),
-        })
-
-        const verifyResponseJson = await verifyResponse.json()
-
-        if (verifyResponse.ok && verifyResponseJson.status === 200) {
-          console.log("World ID verification success on backend!")
-        } else {
-          console.error("Backend verification failed (but proceeding):", verifyResponseJson)
-        }
+        // Não navega se a verificação do MiniKit falhar
+        return
       }
-      // Navega para a agenda independentemente do resultado da verificação do backend
-      router.push("/agenda")
+
+      // Enviar a prova para o backend para verificação
+      const verifyResponse = await fetch("/api/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          payload: finalPayload as ISuccessResult,
+          action: "welcomewacademy",
+          signal: userNameInput,
+        }),
+      })
+
+      const verifyResponseJson = await verifyResponse.json()
+
+      if (verifyResponse.ok && verifyResponseJson.status === 200) {
+        console.log("World ID verification success on backend!")
+        // Navega para a agenda SOMENTE se a verificação do backend for bem-sucedida
+        router.push("/agenda")
+      } else {
+        console.error("Backend verification failed:", verifyResponseJson)
+        // Não navega se a verificação do backend falhar
+      }
     } catch (error) {
-      console.error("Error during World ID process or backend call (but proceeding):", error)
-      router.push("/agenda") // Garante navegação mesmo em caso de erro na chamada fetch
+      console.error("Error during World ID process or backend call:", error)
+      // Não navega em caso de qualquer erro
     } finally {
       setIsVerifying(false) // Finaliza o estado de carregamento
     }
