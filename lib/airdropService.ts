@@ -1,14 +1,18 @@
 import { ethers } from "ethers"
 import { AIRDROP_CONTRACT_ADDRESS, RPC_ENDPOINTS, airdropContractABI } from "./airdropContractABI"
+import type { AirdropStatus } from "./types" // Importar o tipo AirdropStatus
+
+// Constantes do contrato (hardcoded, pois não são funções de visualização no ABI)
+const TOKENS_PER_CLAIM = 1 // 1 token
+const MAX_DAILY_CLAIMS = 20 // Máximo de 20 resgates/dia
 
 // Função para obter o status do airdrop para um endereço
-export async function getAirdropStatus(address: string) {
+export async function getAirdropStatus(address: string): Promise<AirdropStatus> {
   try {
     console.log(`Checking airdrop status for address: ${address}`)
     console.log(`Using contract address: ${AIRDROP_CONTRACT_ADDRESS}`)
 
-    // Tentar cada RPC até encontrar um que funcione
-    let lastError = null
+    let lastError: any = null
 
     for (const rpcUrl of RPC_ENDPOINTS) {
       try {
@@ -16,90 +20,73 @@ export async function getAirdropStatus(address: string) {
 
         const provider = new ethers.JsonRpcProvider(rpcUrl)
 
-        // Verificar se o contrato existe
         const code = await provider.getCode(AIRDROP_CONTRACT_ADDRESS)
         if (code === "0x") {
           console.log(`Contract not found at ${AIRDROP_CONTRACT_ADDRESS} using RPC ${rpcUrl}`)
-          continue // Tentar próximo RPC
+          continue
         }
 
         console.log(`Contract found at ${AIRDROP_CONTRACT_ADDRESS} using RPC ${rpcUrl}`)
 
         const contract = new ethers.Contract(AIRDROP_CONTRACT_ADDRESS, airdropContractABI, provider)
 
-        // Buscar dados do contrato
-        const [lastClaimTime, claimInterval, dailyAirdrop] = await Promise.all([
-          contract.lastClaimTime(address),
-          contract.CLAIM_INTERVAL(),
-          contract.DAILY_AIRDROP(),
-        ])
+        // Buscar dados do contrato usando getTodaysClaims
+        const claimsToday = await contract.getTodaysClaims(address)
+        const isBlocked = await contract.blockedAddresses(address)
 
         console.log("Contract data retrieved:", {
-          lastClaimTime: Number(lastClaimTime),
-          claimInterval: Number(claimInterval),
-          dailyAirdrop: dailyAirdrop.toString(),
+          claimsToday: Number(claimsToday),
+          isBlocked: isBlocked,
         })
 
-        const now = Math.floor(Date.now() / 1000)
-        const nextClaimTime = Number(lastClaimTime) + Number(claimInterval)
-        const canClaim = Number(lastClaimTime) === 0 || now >= nextClaimTime
+        const canClaim = !isBlocked && Number(claimsToday) < MAX_DAILY_CLAIMS
 
         return {
           success: true,
-          lastClaimTime: Number(lastClaimTime),
-          nextClaimTime: nextClaimTime,
+          lastClaimTime: 0, // Não mais diretamente do contrato, mas pode ser inferido ou removido
+          nextClaimTime: 0, // Não mais diretamente do contrato
           canClaim: canClaim,
-          timeRemaining: canClaim ? 0 : nextClaimTime - now,
-          airdropAmount: ethers.formatUnits(dailyAirdrop, 18),
+          timeRemaining: 0, // Não mais diretamente do contrato
+          airdropAmount: TOKENS_PER_CLAIM.toString(),
           rpcUsed: rpcUrl,
+          claimsToday: Number(claimsToday),
+          maxDailyClaims: MAX_DAILY_CLAIMS,
+          isBlocked: isBlocked,
         }
       } catch (error: any) {
         console.error(`Error with RPC ${rpcUrl}:`, error)
         lastError = error
-        // Continuar para o próximo RPC
       }
     }
 
-    // Se chegamos aqui, nenhum RPC funcionou
-    // Vamos usar uma simulação para desenvolvimento
-    console.log("All RPCs failed, using simulation mode")
-
-    // Verificar se há um último claim no localStorage
-    const lastClaimTimeStr = localStorage.getItem(`lastClaim_${address}`)
-
-    if (lastClaimTimeStr) {
-      const lastClaimTime = Math.floor(new Date(lastClaimTimeStr).getTime() / 1000)
-      const now = Math.floor(Date.now() / 1000)
-      const claimInterval = 24 * 60 * 60 // 24 horas em segundos
-      const nextClaimTime = lastClaimTime + claimInterval
-      const canClaim = now >= nextClaimTime
-
-      return {
-        success: true,
-        lastClaimTime: lastClaimTime,
-        nextClaimTime: nextClaimTime,
-        canClaim: canClaim,
-        timeRemaining: canClaim ? 0 : nextClaimTime - now,
-        airdropAmount: "50",
-        rpcUsed: "simulation",
-      }
-    }
-
-    // Se não há registro de claim anterior, permitir o claim
+    console.log("All RPCs failed, returning default status.")
     return {
-      success: true,
+      success: false,
+      error: lastError instanceof Error ? lastError.message : "Failed to fetch airdrop status from any RPC endpoint",
       lastClaimTime: 0,
       nextClaimTime: 0,
-      canClaim: true,
+      canClaim: false,
       timeRemaining: 0,
-      airdropAmount: "50",
-      rpcUsed: "simulation",
+      airdropAmount: TOKENS_PER_CLAIM.toString(),
+      rpcUsed: "none",
+      claimsToday: 0,
+      maxDailyClaims: MAX_DAILY_CLAIMS,
+      isBlocked: false,
     }
   } catch (error: any) {
     console.error("Error fetching airdrop status:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to fetch airdrop status",
+      lastClaimTime: 0,
+      nextClaimTime: 0,
+      canClaim: false,
+      timeRemaining: 0,
+      airdropAmount: TOKENS_PER_CLAIM.toString(),
+      rpcUsed: "none",
+      claimsToday: 0,
+      maxDailyClaims: MAX_DAILY_CLAIMS,
+      isBlocked: false,
     }
   }
 }
@@ -109,8 +96,7 @@ export async function getContractBalance() {
   try {
     console.log(`Fetching contract balance from address: ${AIRDROP_CONTRACT_ADDRESS}`)
 
-    // Tentar cada RPC até encontrar um que funcione
-    let lastError = null
+    let lastError: any = null
 
     for (const rpcUrl of RPC_ENDPOINTS) {
       try {
@@ -118,11 +104,10 @@ export async function getContractBalance() {
 
         const provider = new ethers.JsonRpcProvider(rpcUrl)
 
-        // Verificar se o contrato existe
         const code = await provider.getCode(AIRDROP_CONTRACT_ADDRESS)
         if (code === "0x") {
           console.log(`Contract not found at ${AIRDROP_CONTRACT_ADDRESS} using RPC ${rpcUrl}`)
-          continue // Tentar próximo RPC
+          continue
         }
 
         console.log(`Contract found at ${AIRDROP_CONTRACT_ADDRESS} using RPC ${rpcUrl}`)
@@ -130,6 +115,7 @@ export async function getContractBalance() {
         const contract = new ethers.Contract(AIRDROP_CONTRACT_ADDRESS, airdropContractABI, provider)
 
         const balance = await contract.contractBalance()
+        // O contrato AirdropPreConfigured transfere 1 token (10^18 decimais), então formatUnits(balance, 18) é apropriado
         const formattedBalance = ethers.formatUnits(balance, 18)
 
         console.log(`Contract balance: ${formattedBalance} TPF`)
@@ -142,14 +128,13 @@ export async function getContractBalance() {
       } catch (error: any) {
         console.error(`Error with RPC ${rpcUrl}:`, error)
         lastError = error
-        // Continuar para o próximo RPC
       }
     }
 
-    // Se chegamos aqui, nenhum RPC funcionou, usar valor simulado
+    console.log("All RPCs failed, returning simulated contract balance.")
     return {
       success: true,
-      balance: "1000000",
+      balance: "1000000", // Valor simulado
       rpcUsed: "simulation",
     }
   } catch (error: any) {
@@ -165,10 +150,11 @@ export async function getContractBalance() {
 // Função para reivindicar o airdrop
 export async function claimAirdrop(address: string) {
   try {
-    console.log(`Claiming airdrop for address: ${address}`)
+    console.log(`Attempting to claim airdrop for address: ${address}`)
 
     if (typeof window === "undefined" || !window.MiniKit || !window.MiniKit.isInstalled()) {
       console.warn("MiniKit is not installed or not available in this environment. Trying alternative API method.")
+      // Fallback para a API se MiniKit não estiver disponível
       return await processAirdrop(address)
     }
 
@@ -185,7 +171,7 @@ export async function claimAirdrop(address: string) {
             address: AIRDROP_CONTRACT_ADDRESS,
             abi: airdropContractABI,
             functionName: "claimAirdrop",
-            args: [],
+            args: [], // A função claimAirdrop do novo contrato não recebe argumentos
           },
         ],
       })
@@ -194,28 +180,16 @@ export async function claimAirdrop(address: string) {
 
       if (finalPayload.status === "error") {
         console.error("Error claiming airdrop:", finalPayload.message)
-        throw new Error(finalPayload.message || "Failed to claim airdrop")
+        throw new Error(finalPayload.message || "Failed to claim airdrop via MiniKit")
       }
 
       console.log("Airdrop claimed successfully:", finalPayload)
 
-      // Salvar o timestamp do claim no localStorage
-      localStorage.setItem(`lastClaim_${address}`, new Date().toISOString())
-
-      // Atualizar o saldo do usuário (simulação)
-      const currentBalance = localStorage.getItem("userDefinedTPFBalance")
-      if (currentBalance) {
-        const newBalance = Number(currentBalance) + 50
-        localStorage.setItem("userDefinedTPFBalance", newBalance.toString())
-
-        // Disparar evento para atualizar o saldo na UI
-        const event = new CustomEvent("tpf_balance_updated", {
-          detail: {
-            amount: newBalance,
-          },
-        })
-        window.dispatchEvent(event)
-      }
+      // Não há mais necessidade de salvar lastClaim_address no localStorage para o novo contrato
+      // A lógica de claimsToday é gerenciada no contrato.
+      // A atualização do saldo do usuário deve ser feita buscando o saldo real após o claim.
+      // Disparar evento para que a UI possa atualizar o saldo
+      window.dispatchEvent(new CustomEvent("tpf_balance_updated"))
 
       return {
         success: true,
@@ -223,8 +197,6 @@ export async function claimAirdrop(address: string) {
       }
     } catch (error: any) {
       console.error("Error in MiniKit transaction:", error)
-
-      // Tentar método alternativo se o MiniKit falhar
       console.log("Trying alternative method via API...")
       return await processAirdrop(address)
     }
@@ -237,12 +209,12 @@ export async function claimAirdrop(address: string) {
   }
 }
 
-// Método alternativo para processar o airdrop via API
-export async function processAirdrop(address: string) {
+// Método alternativo para processar o airdrop via API (simulação de backend)
+export async function processAirdrop(userAddress: string) {
   try {
-    console.log(`Processing airdrop via API for address: ${address}`)
+    console.log(`Processing airdrop via API for address: ${userAddress}`)
 
-    // Gerar uma assinatura simulada
+    // Simular uma assinatura e timestamp
     const timestamp = Date.now()
     const signature = Math.random().toString(36).substring(2, 15)
 
@@ -254,7 +226,7 @@ export async function processAirdrop(address: string) {
       },
       body: JSON.stringify({
         signature,
-        userAddress: address,
+        userAddress,
         timestamp,
       }),
     })
@@ -262,26 +234,11 @@ export async function processAirdrop(address: string) {
     const data = await response.json()
 
     if (!data.success) {
-      throw new Error(data.error || "Failed to process airdrop")
+      throw new Error(data.error || "Failed to process airdrop via API")
     }
 
-    // Salvar o timestamp do claim no localStorage
-    localStorage.setItem(`lastClaim_${address}`, new Date().toISOString())
-
-    // Atualizar o saldo do usuário (simulação)
-    const currentBalance = localStorage.getItem("userDefinedTPFBalance")
-    if (currentBalance) {
-      const newBalance = Number(currentBalance) + 50
-      localStorage.setItem("userDefinedTPFBalance", newBalance.toString())
-
-      // Disparar evento para atualizar o saldo na UI
-      const event = new CustomEvent("tpf_balance_updated", {
-        detail: {
-          amount: newBalance,
-        },
-      })
-      window.dispatchEvent(event)
-    }
+    // Disparar evento para que a UI possa atualizar o saldo
+    window.dispatchEvent(new CustomEvent("tpf_balance_updated"))
 
     return {
       success: true,

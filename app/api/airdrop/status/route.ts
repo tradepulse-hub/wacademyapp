@@ -2,6 +2,10 @@ import { NextResponse } from "next/server"
 import { ethers } from "ethers"
 import { airdropContractABI, AIRDROP_CONTRACT_ADDRESS, RPC_ENDPOINTS } from "@/lib/airdropContractABI"
 
+// Constantes do contrato (hardcoded, pois não são funções de visualização no ABI)
+const MAX_DAILY_CLAIMS = 20
+const TOKENS_PER_CLAIM = 1 // 1 token
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -20,8 +24,7 @@ export async function GET(request: Request) {
     console.log(`Checking airdrop status for address: ${address}`)
     console.log(`Using contract address: ${AIRDROP_CONTRACT_ADDRESS}`)
 
-    // Tentar cada RPC até encontrar um que funcione
-    let lastError = null
+    let lastError: any = null
 
     for (const rpcUrl of RPC_ENDPOINTS) {
       try {
@@ -29,51 +32,47 @@ export async function GET(request: Request) {
 
         const provider = new ethers.JsonRpcProvider(rpcUrl)
 
-        // Verificar se o contrato existe
         const code = await provider.getCode(AIRDROP_CONTRACT_ADDRESS)
         if (code === "0x") {
           console.log(`Contract not found at ${AIRDROP_CONTRACT_ADDRESS} using RPC ${rpcUrl}`)
-          continue // Tentar próximo RPC
+          continue
         }
 
         console.log(`Contract found at ${AIRDROP_CONTRACT_ADDRESS} using RPC ${rpcUrl}`)
 
         const contract = new ethers.Contract(AIRDROP_CONTRACT_ADDRESS, airdropContractABI, provider)
 
-        // Buscar dados do contrato
-        const [lastClaimTime, claimInterval, dailyAirdrop] = await Promise.all([
-          contract.lastClaimTime(address),
-          contract.CLAIM_INTERVAL(),
-          contract.DAILY_AIRDROP(),
+        // Buscar dados do contrato usando getTodaysClaims e blockedAddresses
+        const [claimsToday, isBlocked] = await Promise.all([
+          contract.getTodaysClaims(address),
+          contract.blockedAddresses(address),
         ])
 
         console.log("Contract data retrieved:", {
-          lastClaimTime: Number(lastClaimTime),
-          claimInterval: Number(claimInterval),
-          dailyAirdrop: dailyAirdrop.toString(),
+          claimsToday: Number(claimsToday),
+          isBlocked: isBlocked,
         })
 
-        const now = Math.floor(Date.now() / 1000)
-        const nextClaimTime = Number(lastClaimTime) + Number(claimInterval)
-        const canClaim = Number(lastClaimTime) === 0 || now >= nextClaimTime
+        const canClaim = !isBlocked && Number(claimsToday) < MAX_DAILY_CLAIMS
 
         return NextResponse.json({
           success: true,
-          lastClaimTime: Number(lastClaimTime),
-          nextClaimTime: nextClaimTime,
+          lastClaimTime: 0, // Não mais diretamente do contrato
+          nextClaimTime: 0, // Não mais diretamente do contrato
           canClaim: canClaim,
-          timeRemaining: canClaim ? 0 : nextClaimTime - now,
-          airdropAmount: ethers.formatUnits(dailyAirdrop, 18),
+          timeRemaining: 0, // Não mais diretamente do contrato
+          airdropAmount: TOKENS_PER_CLAIM.toString(),
           rpcUsed: rpcUrl,
+          claimsToday: Number(claimsToday),
+          maxDailyClaims: MAX_DAILY_CLAIMS,
+          isBlocked: isBlocked,
         })
       } catch (error: any) {
         console.error(`Error with RPC ${rpcUrl}:`, error)
         lastError = error
-        // Continuar para o próximo RPC
       }
     }
 
-    // Se chegamos aqui, nenhum RPC funcionou
     return NextResponse.json(
       {
         success: false,

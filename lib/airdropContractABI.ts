@@ -1,9 +1,9 @@
 import { ethers } from "ethers"
 
-// Endereço do contrato de airdrop na Worldchain
-export const AIRDROP_CONTRACT_ADDRESS = "0x7b7540d8a1713a5c7d7C9257573Bdf56E7488E05"
+// NOVO Endereço do contrato de airdrop na Worldchain
+export const AIRDROP_CONTRACT_ADDRESS = "0x1015996F31A318aEe1dd25a03D190A6B962447a5"
 
-// Endereço do token TPF
+// Endereço do token TPF (mantido do projeto anterior, assumindo que é o token de recompensa)
 export const TPF_TOKEN_ADDRESS = "0x834a73c0a83F3BCe349A116FFB2A4c2d1C651E45"
 
 // Lista de RPCs para World Chain
@@ -14,10 +14,16 @@ export const RPC_ENDPOINTS = [
   "https://rpc-testnet.worldcoin.org",
 ]
 
-// ABI completa do contrato de airdrop
+// ABI completa do NOVO contrato de airdrop (extraída do Solidity fornecido)
 export const airdropContractABI = [
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "address",
+        name: "_rewardToken",
+        type: "address",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "constructor",
   },
@@ -41,29 +47,74 @@ export const airdropContractABI = [
     type: "event",
   },
   {
-    inputs: [],
-    name: "CLAIM_INTERVAL",
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "user",
+        type: "address",
+      },
+    ],
+    name: "AddressBlocked",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "user",
+        type: "address",
+      },
+    ],
+    name: "AddressUnblocked",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "newToken",
+        type: "address",
+      },
+    ],
+    name: "RewardTokenChanged",
+    type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "blockedAddresses",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "bool",
         name: "",
-        type: "uint256",
+        type: "bool",
       },
     ],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [],
-    name: "DAILY_AIRDROP",
-    outputs: [
+    inputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
+        internalType: "address",
+        name: "_user",
+        type: "address",
       },
     ],
-    stateMutability: "view",
+    name: "blockAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -71,6 +122,25 @@ export const airdropContractABI = [
     name: "claimAirdrop",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "claimsToday",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -90,11 +160,30 @@ export const airdropContractABI = [
     inputs: [
       {
         internalType: "address",
+        name: "_user",
+        type: "address",
+      },
+    ],
+    name: "getTodaysClaims",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "",
         type: "address",
       },
     ],
-    name: "lastClaimTime",
+    name: "lastClaimDate",
     outputs: [
       {
         internalType: "uint256",
@@ -120,10 +209,10 @@ export const airdropContractABI = [
   },
   {
     inputs: [],
-    name: "tpfTokenAddress",
+    name: "rewardToken",
     outputs: [
       {
-        internalType: "address",
+        internalType: "contract IERC20",
         name: "",
         type: "address",
       },
@@ -132,8 +221,34 @@ export const airdropContractABI = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_newToken",
+        type: "address",
+      },
+    ],
+    name: "setRewardToken",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_user",
+        type: "address",
+      },
+    ],
+    name: "unblockAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
-    name: "withdrawExcessTPF",
+    name: "withdrawExcessTokens",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

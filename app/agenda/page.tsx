@@ -4,13 +4,13 @@ import { Calendar } from "@/components/ui/calendar"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { Plane, User } from "lucide-react"
+import { Plane, User, Loader2 } from "lucide-react" // Importar Loader2
 import { useXP } from "@/hooks/use-xp"
 import TeacherImage from "@/components/teacher-image"
 import SpeechBubble from "@/components/speech-bubble"
 import UserProfileModal from "@/components/user-profile-modal"
 import { useI18n } from "@/i18n/use-i18n"
-import { useAuth } from "@/hooks/use-auth" // Import useAuth
+import { useAuth } from "@/hooks/use-auth"
 
 // Importar o conteúdo de cada disciplina
 import { mathematicsContent } from "@/content/disciplines/mathematics-content"
@@ -50,8 +50,8 @@ export default function AgendaPage() {
   const router = useRouter()
   const { t, locale } = useI18n()
 
-  const { level, xpPercentage, canClaimLevelUp, claimLevelUp } = useXP()
-  const { userName } = useAuth() // Obtenha o userName do useAuth
+  const { level, xpPercentage, canClaimLevelUp, claimLevelUp, isClaimingAirdrop, airdropStatus } = useXP()
+  const { userName, isAuthenticated, walletAddress } = useAuth() // Obtenha o userName e estado da carteira
 
   // Filtra as disciplinas que têm 10 ou mais exercícios e memoiza o resultado
   const availableDisciplines = useMemo(() => {
@@ -179,14 +179,31 @@ export default function AgendaPage() {
         <span className="text-white text-sm">{xpPercentage.toFixed(2)}%</span>
       </div>
 
-      {/* Claim Level Up Button */}
+      {/* Claim Level Up Button (Airdrop) */}
       {canClaimLevelUp && (
         <Button
           onClick={claimLevelUp}
           className="absolute top-[21%] mt-8 left-1/2 -translate-x-1/2 bg-white text-black border border-black shadow-lg animate-pulse-glow z-20"
+          disabled={isClaimingAirdrop || !isAuthenticated || !walletAddress || !airdropStatus?.canClaim}
         >
-          {t("claim_level_up")}
+          {isClaimingAirdrop ? (
+            <span className="flex items-center">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("claiming")}
+            </span>
+          ) : (
+            t("claim_level_up")
+          )}
         </Button>
+      )}
+      {/* Mensagem de status do airdrop */}
+      {airdropStatus && !airdropStatus.canClaim && (
+        <div className="absolute top-[21%] mt-16 left-1/2 -translate-x-1/2 text-red-600 text-xs text-center z-20">
+          {airdropStatus.isBlocked
+            ? t("airdrop_blocked_message")
+            : airdropStatus.claimsToday >= airdropStatus.maxDailyClaims
+              ? t("airdrop_daily_limit_reached", { count: airdropStatus.maxDailyClaims })
+              : ""}
+        </div>
       )}
 
       {/* Agenda Board and Calendar */}

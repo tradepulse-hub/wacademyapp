@@ -29,10 +29,13 @@ export interface WalletState {
 
 export interface AirdropStatus {
   success: boolean
-  lastClaimTime: number
-  nextClaimTime: number
+  lastClaimTime: number // Mantido para compatibilidade, mas não usado diretamente pelo novo contrato
+  nextClaimTime: number // Mantido para compatibilidade, mas não usado diretamente pelo novo contrato
   canClaim: boolean
-  timeRemaining: number
+  timeRemaining: number // Mantido para compatibilidade, mas não usado diretamente pelo novo contrato
   airdropAmount: string
   rpcUsed: string
+  claimsToday: number // Novo campo para o novo contrato
+  maxDailyClaims: number // Novo campo para o novo contrato
+  isBlocked: boolean // Novo campo para o novo contrato
 }
