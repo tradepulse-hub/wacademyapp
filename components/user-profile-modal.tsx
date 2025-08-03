@@ -17,7 +17,7 @@ interface UserProfileModalProps {
 
 export default function UserProfileModal({ isOpen, onClose, level, xpPercentage }: UserProfileModalProps) {
   const { t } = useI18n()
-  const { isAuthenticated, walletAddress, userName, login, logout, isAuthenticating } = useAuth()
+  const { isAuthenticated, walletAddress, userName, login, logout, isAuthenticating, isInitialized } = useAuth()
   const [loginStatusMessage, setLoginStatusMessage] = useState<string | null>(null)
   const [loginStatusType, setLoginStatusType] = useState<"success" | "error" | null>(null)
   const [wayBalance, setWayBalance] = useState<string | null>(null)
@@ -52,20 +52,25 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
 
   // Load balance when modal opens and wallet is connected
   useEffect(() => {
-    if (isOpen && isAuthenticated && walletAddress) {
+    if (isOpen && isAuthenticated && walletAddress && isInitialized) {
+      console.log("🔄 Modal opened with authenticated wallet, fetching balance...")
       fetchWAYBalance(walletAddress)
     } else {
       setWayBalance(null)
       setBalanceError(null)
     }
-  }, [isOpen, isAuthenticated, walletAddress])
+  }, [isOpen, isAuthenticated, walletAddress, isInitialized])
 
   // Log the userName when the modal opens or userName changes
   useEffect(() => {
-    if (isOpen) {
-      console.log("UserProfileModal: Current userName from useAuth:", userName)
+    if (isOpen && isInitialized) {
+      console.log("UserProfileModal: Current auth state:", {
+        userName,
+        isAuthenticated,
+        walletAddress: walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : null,
+      })
     }
-  }, [isOpen, userName])
+  }, [isOpen, userName, isAuthenticated, walletAddress, isInitialized])
 
   const handleConnectWallet = async () => {
     if (userName) {
@@ -89,18 +94,34 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
   }
 
   const handleDisconnectWallet = async () => {
+    console.log("🚪 Disconnecting wallet...")
     await logout()
     setLoginStatusMessage(null)
     setLoginStatusType(null)
     setWayBalance(null)
     setBalanceError(null)
-    console.log("Wallet disconnected.")
+    console.log("✅ Wallet disconnected.")
   }
 
   const handleRefreshBalance = () => {
     if (walletAddress) {
+      console.log("🔄 Refreshing WAY balance...")
       fetchWAYBalance(walletAddress)
     }
+  }
+
+  // Don't render until auth is initialized
+  if (!isInitialized) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[350px] bg-white text-gray-900 p-4 rounded-lg shadow-lg">
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+            <span className="ml-2 text-sm">Loading...</span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
   }
 
   return (

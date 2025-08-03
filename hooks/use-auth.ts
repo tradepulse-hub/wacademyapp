@@ -17,49 +17,74 @@ export function useAuth() {
     userName: null,
     isAuthenticating: false,
   })
+  const [isInitialized, setIsInitialized] = useState(false)
 
   // Carregar estado de autenticação do localStorage ao montar
   useEffect(() => {
-    const storedUserName = localStorage.getItem("worldAcademyUserName")
-    const storedWalletAddress = localStorage.getItem("worldAcademyWalletAddress")
-    const storedIsAuthenticated = localStorage.getItem("worldAcademyIsAuthenticated") === "true"
+    if (typeof window !== "undefined" && !isInitialized) {
+      console.log("🔄 Loading auth state from localStorage...")
 
-    setAuthState({
-      isAuthenticated: storedIsAuthenticated,
-      walletAddress: storedWalletAddress,
-      userName: storedUserName,
-      isAuthenticating: false,
-    })
-  }, [])
+      const storedUserName = localStorage.getItem("worldAcademyUserName")
+      const storedWalletAddress = localStorage.getItem("worldAcademyWalletAddress")
+      const storedIsAuthenticated = localStorage.getItem("worldAcademyIsAuthenticated") === "true"
+
+      console.log("📊 Stored auth data:", {
+        userName: storedUserName,
+        walletAddress: storedWalletAddress,
+        isAuthenticated: storedIsAuthenticated,
+      })
+
+      if (storedIsAuthenticated && storedUserName) {
+        setAuthState({
+          isAuthenticated: storedIsAuthenticated,
+          walletAddress: storedWalletAddress,
+          userName: storedUserName,
+          isAuthenticating: false,
+        })
+        console.log("✅ Auth state restored from localStorage")
+      } else {
+        console.log("📊 No valid auth state found in localStorage")
+      }
+
+      setIsInitialized(true)
+    }
+  }, [isInitialized])
 
   // Salvar estado de autenticação no localStorage sempre que mudar
   useEffect(() => {
-    localStorage.setItem("worldAcademyIsAuthenticated", authState.isAuthenticated.toString())
-    if (authState.walletAddress) {
-      localStorage.setItem("worldAcademyWalletAddress", authState.walletAddress)
-    } else {
-      localStorage.removeItem("worldAcademyWalletAddress")
+    if (isInitialized && typeof window !== "undefined") {
+      console.log("💾 Saving auth state to localStorage:", authState)
+
+      localStorage.setItem("worldAcademyIsAuthenticated", authState.isAuthenticated.toString())
+
+      if (authState.walletAddress) {
+        localStorage.setItem("worldAcademyWalletAddress", authState.walletAddress)
+      } else {
+        localStorage.removeItem("worldAcademyWalletAddress")
+      }
+
+      if (authState.userName) {
+        localStorage.setItem("worldAcademyUserName", authState.userName)
+      } else {
+        localStorage.removeItem("worldAcademyUserName")
+      }
     }
-    if (authState.userName) {
-      localStorage.setItem("worldAcademyUserName", authState.userName)
-    } else {
-      localStorage.removeItem("worldAcademyUserName")
-    }
-  }, [authState])
+  }, [authState, isInitialized])
 
   const login = useCallback(async (name: string) => {
-    console.log("Attempting login with wallet...")
+    console.log("🔐 Attempting login with wallet...")
     const isMiniKitInstalled = MiniKit.isInstalled()
     console.log("MiniKit.isInstalled():", isMiniKitInstalled)
 
     if (!isMiniKitInstalled) {
       console.error("World App (MiniKit) is not installed. Proceeding without wallet connection.")
-      setAuthState({
+      const newAuthState = {
         isAuthenticated: true,
         walletAddress: null,
         userName: name,
         isAuthenticating: false,
-      })
+      }
+      setAuthState(newAuthState)
       return { success: true, message: "Logged in without wallet (MiniKit not installed)." }
     }
 
@@ -67,17 +92,17 @@ export function useAuth() {
 
     try {
       // 1. Obter nonce do backend
-      console.log("Fetching nonce from backend...")
+      console.log("📡 Fetching nonce from backend...")
       const nonceRes = await fetch("/api/nonce")
       if (!nonceRes.ok) {
         const errorText = await nonceRes.text()
         throw new Error(`Failed to fetch nonce: ${nonceRes.status} ${nonceRes.statusText} - ${errorText}`)
       }
       const { nonce } = await nonceRes.json()
-      console.log("Nonce fetched:", nonce)
+      console.log("✅ Nonce fetched:", nonce)
 
       // 2. Chamar walletAuth do MiniKit
-      console.log("Calling MiniKit.commandsAsync.walletAuth...")
+      console.log("🔗 Calling MiniKit.commandsAsync.walletAuth...")
       const { finalPayload } = await MiniKit.commandsAsync.walletAuth({
         nonce: nonce,
         requestId: "0", // Opcional
@@ -86,16 +111,16 @@ export function useAuth() {
         statement: "Sign in to World Academy to learn and earn!",
       } as WalletAuthInput)
 
-      console.log("MiniKit walletAuth finalPayload:", finalPayload)
+      console.log("📱 MiniKit walletAuth finalPayload:", finalPayload)
 
       if (finalPayload.status === "error") {
-        console.error("Wallet Auth failed:", finalPayload)
+        console.error("❌ Wallet Auth failed:", finalPayload)
         setAuthState((prev) => ({ ...prev, isAuthenticating: false }))
         return { success: false, message: finalPayload.message || "Wallet Auth failed." }
       }
 
       // 3. Enviar payload para verificação no backend
-      console.log("Sending payload to backend for SIWE verification...")
+      console.log("🔍 Sending payload to backend for SIWE verification...")
       const verifyRes = await fetch("/api/complete-siwe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,24 +128,25 @@ export function useAuth() {
       })
 
       const verifyData = await verifyRes.json()
-      console.log("Backend SIWE verification response:", verifyData)
+      console.log("🔐 Backend SIWE verification response:", verifyData)
 
       if (verifyRes.ok && verifyData.status === "success" && verifyData.isValid) {
-        setAuthState({
+        const newAuthState = {
           isAuthenticated: true,
           walletAddress: verifyData.walletAddress,
           userName: name,
           isAuthenticating: false,
-        })
-        console.log("Wallet connected and verified successfully!")
+        }
+        setAuthState(newAuthState)
+        console.log("✅ Wallet connected and verified successfully!")
         return { success: true, message: "Wallet connected and verified!" }
       } else {
-        console.error("Backend SIWE verification failed:", verifyData)
+        console.error("❌ Backend SIWE verification failed:", verifyData)
         setAuthState((prev) => ({ ...prev, isAuthenticating: false }))
         return { success: false, message: verifyData.message || "Backend verification failed." }
       }
     } catch (error) {
-      console.error("Error during wallet authentication process:", error)
+      console.error("❌ Error during wallet authentication process:", error)
       setAuthState((prev) => ({ ...prev, isAuthenticating: false }))
       return { success: false, message: (error as Error).message || "An unexpected error occurred." }
     }
@@ -128,22 +154,29 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     try {
+      console.log("🚪 Logging out...")
       await fetch("/api/logout", { method: "POST" })
-      setAuthState({
+
+      const newAuthState = {
         isAuthenticated: false,
         walletAddress: null,
         userName: null,
         isAuthenticating: false,
-      })
+      }
+      setAuthState(newAuthState)
+
       // Limpar localStorage no cliente também
-      localStorage.removeItem("worldAcademyUserName")
-      localStorage.removeItem("worldAcademyWalletAddress")
-      localStorage.removeItem("worldAcademyIsAuthenticated")
-      console.log("Logged out successfully.")
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("worldAcademyUserName")
+        localStorage.removeItem("worldAcademyWalletAddress")
+        localStorage.removeItem("worldAcademyIsAuthenticated")
+      }
+
+      console.log("✅ Logged out successfully.")
     } catch (error) {
-      console.error("Error during logout:", error)
+      console.error("❌ Error during logout:", error)
     }
   }, [])
 
-  return { ...authState, login, logout }
+  return { ...authState, login, logout, isInitialized }
 }

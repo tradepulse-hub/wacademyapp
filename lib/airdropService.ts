@@ -1,5 +1,4 @@
 import { ethers } from "ethers"
-import { MiniKit } from "@worldcoin/minikit-js"
 import { AIRDROP_CONTRACT_ADDRESS, RPC_ENDPOINTS, airdropContractABI } from "./airdropContractABI"
 
 // Função para obter o status do airdrop para um endereço
@@ -54,7 +53,7 @@ export async function getAirdropStatus(address: string) {
           airdropAmount: ethers.formatUnits(dailyAirdrop, 18),
           rpcUsed: rpcUrl,
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error with RPC ${rpcUrl}:`, error)
         lastError = error
         // Continuar para o próximo RPC
@@ -96,7 +95,7 @@ export async function getAirdropStatus(address: string) {
       airdropAmount: "50",
       rpcUsed: "simulation",
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching airdrop status:", error)
     return {
       success: false,
@@ -140,7 +139,7 @@ export async function getContractBalance() {
           balance: formattedBalance,
           rpcUsed: rpcUrl,
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error with RPC ${rpcUrl}:`, error)
         lastError = error
         // Continuar para o próximo RPC
@@ -153,7 +152,7 @@ export async function getContractBalance() {
       balance: "1000000",
       rpcUsed: "simulation",
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching airdrop contract balance:", error)
     return {
       success: false,
@@ -168,8 +167,9 @@ export async function claimAirdrop(address: string) {
   try {
     console.log(`Claiming airdrop for address: ${address}`)
 
-    if (!MiniKit.isInstalled()) {
-      throw new Error("MiniKit is not installed")
+    if (typeof window === "undefined" || !window.MiniKit || !window.MiniKit.isInstalled()) {
+      console.warn("MiniKit is not installed or not available in this environment. Trying alternative API method.")
+      return await processAirdrop(address)
     }
 
     console.log("MiniKit is installed, preparing to claim airdrop...")
@@ -179,7 +179,7 @@ export async function claimAirdrop(address: string) {
     try {
       // Usar o MiniKit para enviar a transação
       console.log("Calling MiniKit.commandsAsync.sendTransaction...")
-      const { finalPayload } = await MiniKit.commandsAsync.sendTransaction({
+      const { finalPayload } = await window.MiniKit.commandsAsync.sendTransaction({
         transaction: [
           {
             address: AIRDROP_CONTRACT_ADDRESS,
@@ -221,14 +221,14 @@ export async function claimAirdrop(address: string) {
         success: true,
         txId: finalPayload.transaction_id,
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in MiniKit transaction:", error)
 
       // Tentar método alternativo se o MiniKit falhar
       console.log("Trying alternative method via API...")
       return await processAirdrop(address)
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error claiming airdrop:", error)
     return {
       success: false,
@@ -287,7 +287,7 @@ export async function processAirdrop(address: string) {
       success: true,
       txId: data.txId,
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error processing airdrop via API:", error)
     return {
       success: false,

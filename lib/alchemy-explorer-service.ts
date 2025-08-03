@@ -29,13 +29,13 @@ class AlchemyExplorerService {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "User-Agent": "TPulseFi-Wallet/1.0",
+          "User-Agent": "WorldAcademy-App/1.0",
           ...options.headers,
         },
       })
       clearTimeout(timeoutId)
       return response
-    } catch (error) {
+    } catch (error: any) {
       clearTimeout(timeoutId)
       if (error.name === "AbortError") {
         throw new Error(`Request timeout after ${this.timeout}ms`)
@@ -77,7 +77,7 @@ class AlchemyExplorerService {
           this.addDebugLog(`✅ Endpoint ${index + 1}: Dados recebidos`)
 
           return { data, endpoint: index + 1 }
-        } catch (error) {
+        } catch (error: any) {
           this.addDebugLog(`❌ Endpoint ${index + 1}: ${error.message}`)
           return null
         }
@@ -121,7 +121,7 @@ class AlchemyExplorerService {
       this.addDebugLog(`❌ NENHUMA TRANSAÇÃO REAL ENCONTRADA`)
       this.addDebugLog(`📊 Retornando array vazio - SEM MOCKS`)
       return []
-    } catch (error) {
+    } catch (error: any) {
       this.addDebugLog(`❌ Erro geral: ${error.message}`)
       this.addDebugLog(`📊 Retornando array vazio - SEM FALLBACKS`)
 
@@ -170,7 +170,7 @@ class AlchemyExplorerService {
 
       this.addDebugLog(`⚡ RPC REAL: ${transactions.length} transações encontradas`)
       return transactions.slice(0, limit)
-    } catch (error) {
+    } catch (error: any) {
       this.addDebugLog(`❌ RPC REAL falhou: ${error.message}`)
       return []
     }
@@ -252,6 +252,7 @@ class AlchemyExplorerService {
       if (tx.contractAddress) {
         const knownTokens: Record<string, string> = {
           "0xb8dE16B8ED23760AB3699D5c7F6F889f1707a978": "WAY",
+          "0x834a73c0a83F3BCe349A116FFB2A4c2d1C651E45": "TPF",
           "0x2cFc85d8E48F8EAB294be644d9E25C3030863003": "WLD",
           "0xED49fE44fD4249A09843C2Ba4bba7e50BECa7113": "DNA",
           "0xEdE54d9c024ee80C85ec0a75eD2d8774c7Fbac9B": "WDD",

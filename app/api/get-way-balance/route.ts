@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { ethers } from "ethers"
-import { WAY_TOKEN_ADDRESS, WORLD_CHAIN_RPC_URL, ERC20_ABI } from "@/lib/constants"
+import { WORLD_CHAIN_CONFIG, WAY_TOKEN_CONFIG, ERC20_ABI } from "@/lib/constants"
 
 export async function GET(request: Request) {
   try {
@@ -18,28 +18,29 @@ export async function GET(request: Request) {
     }
 
     console.log(`🔍 Fetching WAY balance for address: ${address}`)
-    console.log(`📍 Token address: ${WAY_TOKEN_ADDRESS}`)
-    console.log(`🌐 RPC URL: ${WORLD_CHAIN_RPC_URL}`)
+    console.log(`📡 Using RPC: ${WORLD_CHAIN_CONFIG.rpcUrl}`)
+    console.log(`🪙 WAY Token: ${WAY_TOKEN_CONFIG.address}`)
 
     // Create provider for World Chain
-    const provider = new ethers.JsonRpcProvider(WORLD_CHAIN_RPC_URL)
+    const provider = new ethers.JsonRpcProvider(WORLD_CHAIN_CONFIG.rpcUrl)
 
-    // Create contract instance
-    const contract = new ethers.Contract(WAY_TOKEN_ADDRESS, ERC20_ABI, provider)
+    // Create contract instance for WAY token
+    const contract = new ethers.Contract(WAY_TOKEN_CONFIG.address, ERC20_ABI, provider)
 
-    // Get balance and decimals
-    const [balance, decimals] = await Promise.all([contract.balanceOf(address), contract.decimals()])
+    // Get balance
+    const balance = await contract.balanceOf(address)
+    console.log(`📊 Raw balance: ${balance.toString()}`)
 
-    // Format balance
-    const formattedBalance = ethers.formatUnits(balance, decimals)
-
-    console.log(`✅ WAY balance fetched: ${formattedBalance}`)
+    // Convert from wei to readable format
+    const formattedBalance = ethers.formatUnits(balance, WAY_TOKEN_CONFIG.decimals)
+    console.log(`✅ Formatted balance: ${formattedBalance} WAY`)
 
     return NextResponse.json({
       success: true,
       balance: formattedBalance,
-      tokenAddress: WAY_TOKEN_ADDRESS,
-      decimals: Number(decimals),
+      address: address,
+      token: WAY_TOKEN_CONFIG.symbol,
+      network: WORLD_CHAIN_CONFIG.name,
     })
   } catch (error) {
     console.error("❌ Error fetching WAY balance:", error)

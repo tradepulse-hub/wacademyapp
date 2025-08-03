@@ -1,4 +1,4 @@
-// Serviço APENAS para TPF definido manualmente pelo usuário
+// Serviço para sincronização de saldos de tokens
 class BalanceSyncService {
   private static instance: BalanceSyncService
 
@@ -9,134 +9,81 @@ class BalanceSyncService {
     return BalanceSyncService.instance
   }
 
-  updateTPFBalance(walletAddress: string, balance: number): void {
+  updateWAYBalance(walletAddress: string, balance: number): void {
     try {
-      console.log(`🔄 User manually setting TPF balance: ${balance.toLocaleString()} TPF`)
+      console.log(`🔄 Updating WAY balance: ${balance.toLocaleString()} WAY`)
 
       const balanceStr = balance.toString()
-      localStorage.setItem(`tpf_balance_${walletAddress}`, balanceStr)
-      localStorage.setItem("current_tpf_balance", balanceStr)
-      localStorage.setItem("tpf_balance_timestamp", Date.now().toString())
+      localStorage.setItem(`way_balance_${walletAddress}`, balanceStr)
+      localStorage.setItem("current_way_balance", balanceStr)
+      localStorage.setItem("way_balance_timestamp", Date.now().toString())
 
       // Dispatch events
-      const event = new CustomEvent("tpf_balance_updated", {
-        detail: { walletAddress, tpfBalance: balance, timestamp: Date.now(), userSet: true },
+      const event = new CustomEvent("way_balance_updated", {
+        detail: { walletAddress, wayBalance: balance, timestamp: Date.now() },
       })
       window.dispatchEvent(event)
 
-      console.log(`✅ TPF Balance manually set: ${balance.toLocaleString()} TPF`)
+      console.log(`✅ WAY Balance updated: ${balance.toLocaleString()} WAY`)
     } catch (error) {
-      console.error("Error updating TPF balance:", error)
+      console.error("❌ Error updating WAY balance:", error)
     }
   }
 
-  getCurrentTPFBalance(walletAddress: string): number {
+  getCurrentWAYBalance(walletAddress: string): number {
     try {
-      // Só retornar se foi definido pelo usuário (tem timestamp)
-      const timestamp = localStorage.getItem("tpf_balance_timestamp")
-      if (!timestamp) {
-        console.log("📊 No user-set TPF balance found")
-        return 0
-      }
-
       const balance =
-        localStorage.getItem(`tpf_balance_${walletAddress}`) || localStorage.getItem("current_tpf_balance")
+        localStorage.getItem(`way_balance_${walletAddress}`) || localStorage.getItem("current_way_balance")
 
       if (balance && balance !== "0" && balance !== "null") {
         const numBalance = Number.parseFloat(balance)
-        if (!isNaN(numBalance) && numBalance > 0) {
-          console.log(`✅ Found user-set TPF balance: ${numBalance}`)
+        if (!isNaN(numBalance) && numBalance >= 0) {
+          console.log(`✅ Found cached WAY balance: ${numBalance}`)
           return numBalance
         }
       }
 
-      console.log("📊 No valid user-set TPF balance")
+      console.log("📊 No cached WAY balance found")
       return 0
     } catch (error) {
-      console.error("Error getting TPF balance:", error)
+      console.error("❌ Error getting WAY balance:", error)
       return 0
     }
   }
 
   async forceBalanceUpdate(walletAddress: string): Promise<number> {
     try {
-      console.log("🔄 Force balance update - checking for REAL balance...")
+      console.log("🔄 Force balance update - fetching real WAY balance...")
 
-      // Tentar obter saldo real da blockchain primeiro
-      const realBalance = await this.getRealTPFBalance(walletAddress)
-      if (realBalance > 0) {
-        console.log(`✅ Found real TPF balance: ${realBalance}`)
-        this.updateTPFBalance(walletAddress, realBalance)
-        return realBalance
+      const response = await fetch(`/api/get-way-balance?address=${walletAddress}`)
+      const data = await response.json()
+
+      if (data.success) {
+        const balance = Number.parseFloat(data.balance)
+        this.updateWAYBalance(walletAddress, balance)
+        return balance
+      } else {
+        throw new Error(data.error || "Failed to fetch balance")
       }
-
-      // Se não tem saldo real, verificar se usuário definiu manualmente
-      const userSetBalance = this.getCurrentTPFBalance(walletAddress)
-      if (userSetBalance > 0) {
-        console.log(`✅ Using user-set TPF balance: ${userSetBalance}`)
-        return userSetBalance
-      }
-
-      console.log("📊 No TPF balance found (real or user-set)")
-      return 0
     } catch (error) {
-      console.error("Error forcing balance update:", error)
-      return 0
-    }
-  }
-
-  private async getRealTPFBalance(walletAddress: string): Promise<number> {
-    try {
-      console.log("🔍 Checking for REAL TPF balance...")
-
-      // Tentar MiniKit primeiro
-      if (typeof window !== "undefined" && window.MiniKit?.getTokenBalance) {
-        try {
-          const result = await window.MiniKit.getTokenBalance({
-            tokenAddress: "0x834a73c0a83F3BCe349A116FFB2A4c2d1C651E45", // TPF
-            walletAddress: walletAddress,
-          })
-
-          if (result?.balance) {
-            const balance = Number(result.balance) / 1e18
-            console.log(`✅ Real TPF balance from MiniKit: ${balance}`)
-            return balance
-          }
-        } catch (miniKitError) {
-          console.log("⚠️ MiniKit TPF balance failed:", miniKitError.message)
-        }
-      }
-
-      console.log("📊 No real TPF balance found")
-      return 0
-    } catch (error) {
-      console.error("Error getting real TPF balance:", error)
+      console.error("❌ Error forcing balance update:", error)
       return 0
     }
   }
 
   onBalanceChange(callback: (balance: number) => void): () => void {
     const handleBalanceUpdate = (event: CustomEvent) => {
-      if (event.detail?.tpfBalance !== undefined) {
-        callback(event.detail.tpfBalance)
+      if (event.detail?.wayBalance !== undefined) {
+        callback(event.detail.wayBalance)
       }
     }
 
-    window.addEventListener("tpf_balance_updated", handleBalanceUpdate as EventListener)
+    window.addEventListener("way_balance_updated", handleBalanceUpdate as EventListener)
 
     return () => {
-      window.removeEventListener("tpf_balance_updated", handleBalanceUpdate as EventListener)
+      window.removeEventListener("way_balance_updated", handleBalanceUpdate as EventListener)
     }
   }
 }
 
 export const balanceSyncService = BalanceSyncService.getInstance()
-
-declare global {
-  interface Window {
-    MiniKit?: {
-      isConnected?: () => boolean
-      getTokenBalance: (params: { tokenAddress: string; walletAddress: string }) => Promise<{ balance: string }>
-    }
-  }
-}

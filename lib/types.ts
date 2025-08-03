@@ -17,10 +17,22 @@ export interface TokenBalance {
   address: string
   balance: string
   decimals: number
+  name: string
 }
 
-export interface WalletInfo {
-  address: string
-  balances: TokenBalance[]
-  transactions: Transaction[]
+export interface WalletState {
+  isConnected: boolean
+  address: string | null
+  chainId: number | null
+  balances: Record<string, string>
+}
+
+export interface AirdropStatus {
+  success: boolean
+  lastClaimTime: number
+  nextClaimTime: number
+  canClaim: boolean
+  timeRemaining: number
+  airdropAmount: string
+  rpcUsed: string
 }

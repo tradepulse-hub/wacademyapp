@@ -1,11 +1,26 @@
 // World Chain Network Configuration
-export const WORLD_CHAIN_RPC_URL = "https://worldchain-mainnet.g.alchemy.com/public"
-export const WORLD_CHAIN_ID = 480
+export const WORLD_CHAIN_CONFIG = {
+  chainId: 480, // 0x1e0
+  name: "World Chain Mainnet",
+  shortName: "wc",
+  rpcUrl: "https://worldchain-mainnet.g.alchemy.com/public",
+  blockExplorer: "https://worldscan.org",
+  bridge: "https://worldchain-mainnet.bridge.alchemy.com",
+  statusPage: "https://worldchain-mainnet-status.alchemy.com",
+  gasLimit: 30_000_000,
+  gasTarget: 15_000_000,
+  blockTime: 2, // seconds
+}
 
-// WAY Token Address on World Chain
-export const WAY_TOKEN_ADDRESS = "0xb8dE16B8ED23760AB3699D5c7F6F889f1707a978"
+// WAY Token Configuration
+export const WAY_TOKEN_CONFIG = {
+  address: "0xb8dE16B8ED23760AB3699D5c7F6F889f1707a978",
+  symbol: "WAY",
+  decimals: 18,
+  name: "WAY Token",
+}
 
-// ERC-20 ABI for balance queries
+// ERC-20 ABI for token balance queries
 export const ERC20_ABI = [
   {
     constant: true,
@@ -25,6 +40,13 @@ export const ERC20_ABI = [
     constant: true,
     inputs: [],
     name: "symbol",
+    outputs: [{ name: "", type: "string" }],
+    type: "function",
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: "name",
     outputs: [{ name: "", type: "string" }],
     type: "function",
   },

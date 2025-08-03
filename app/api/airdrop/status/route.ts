@@ -66,7 +66,7 @@ export async function GET(request: Request) {
           airdropAmount: ethers.formatUnits(dailyAirdrop, 18),
           rpcUsed: rpcUrl,
         })
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error with RPC ${rpcUrl}:`, error)
         lastError = error
         // Continuar para o próximo RPC
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
       },
       { status: 500 },
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching airdrop status:", error)
     return NextResponse.json(
       {

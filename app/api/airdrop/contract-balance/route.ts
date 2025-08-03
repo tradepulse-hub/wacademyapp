@@ -36,7 +36,7 @@ export async function GET() {
           balance: formattedBalance,
           rpcUsed: rpcUrl,
         })
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error with RPC ${rpcUrl}:`, error)
         lastError = error
         // Continuar para o próximo RPC
@@ -52,7 +52,7 @@ export async function GET() {
       },
       { status: 500 },
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching airdrop contract balance:", error)
     return NextResponse.json(
       {
