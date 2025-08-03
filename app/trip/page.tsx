@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Lock } from "lucide-react"
 import { useI18n } from "@/i18n/use-i18n"
-import BackButton from "@/components/back-button" // Corrected import
+import BackButton from "@/components/back-button"
 import SpeechBubble from "@/components/speech-bubble"
 
 export default function TripPage() {
