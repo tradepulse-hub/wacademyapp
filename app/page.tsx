@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import TeacherImage from "@/components/teacher-image" // Importação padrão
-import SpeechBubble from "@/components/speech-bubble" // Importação padrão
+import TeacherImage from "@/components/teacher-image"
+import SpeechBubble from "@/components/speech-bubble"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useI18n } from "@/i18n/use-i18n"
 import { MiniKit, type VerifyCommandInput, VerificationLevel, type ISuccessResult } from "@worldcoin/minikit-js" // Import MiniKit

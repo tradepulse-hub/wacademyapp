@@ -3,23 +3,30 @@
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
+import { useI18n } from "@/i18n/use-i18n"
 
-export default function BackButton() {
+interface BackButtonProps {
+  href?: string
+  className?: string
+}
+
+// Alterado para exportação padrão
+export default function BackButton({ href, className }: BackButtonProps) {
   const router = useRouter()
+  const { t } = useI18n()
 
-  const handleBack = () => {
-    router.back()
+  const handleClick = () => {
+    if (href) {
+      router.push(href)
+    } else {
+      router.back()
+    }
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={handleBack}
-      className="absolute top-4 left-4 z-50 text-gray-800 hover:bg-gray-200"
-      aria-label="Go back"
-    >
+    <Button variant="ghost" onClick={handleClick} className={`text-white bg-black hover:bg-gray-800 ${className}`}>
       <ChevronLeft className="h-6 w-6" />
+      {t("back")}
     </Button>
   )
 }
