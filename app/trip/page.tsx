@@ -2,13 +2,15 @@
 
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Lock } from "lucide-react"
 import Image from "next/image"
 import { useI18n } from "@/i18n/use-i18n" // Import useI18n
+import { useState } from "react" // Import useState
 
 export default function TripPage() {
   const router = useRouter()
-  const { t } = useI18n() // Use the i18n hook
+  const { t } = useI18n()
+  const [isLocked, setIsLocked] = useState(true) // Começa bloqueado
 
   return (
     <div
@@ -28,10 +30,17 @@ export default function TripPage() {
         {t("back")} {/* Translated "Back" */}
       </Button>
 
-      {/* Container for country windows, centered */}
-      <div className="flex flex-wrap justify-center items-center gap-8 p-4">
+      {/* Overlay de bloqueio */}
+      {isLocked && (
+        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-40">
+          <Lock className="h-24 w-24 text-white animate-pulse" />
+        </div>
+      )}
+
+      {/* Container para as janelas dos países, centralizado */}
+      <div className="flex flex-wrap justify-center items-center gap-8 p-4 z-30">
         {/* Portugal Window */}
-        <div className="flex flex-col items-center gap-2 cursor-pointer" onClick={() => router.push("/candy-crush")}>
+        <div className="flex flex-col items-center gap-2 cursor-pointer">
           <div className="relative w-40 h-40 border-4 border-white rounded-lg overflow-hidden shadow-lg">
             <Image
               src="/images/portugal-monument.png"
