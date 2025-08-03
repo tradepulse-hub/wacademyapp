@@ -11,7 +11,6 @@ import SpeechBubble from "@/components/speech-bubble"
 import UserProfileModal from "@/components/user-profile-modal"
 import { useI18n } from "@/i18n/use-i18n"
 import { useAuth } from "@/hooks/use-auth"
-import { airdropStatus as useAirDropStatus } from "@/hooks/use-airdrop-status" // Importar airdropStatus
 
 // Importar o conteúdo de cada disciplina
 import { mathematicsContent } from "@/content/disciplines/mathematics-content"
@@ -51,9 +50,8 @@ export default function AgendaPage() {
   const router = useRouter()
   const { t, locale } = useI18n()
 
-  const { level, xpPercentage, canClaimLevelUp, claimLevelUp, isClaimingAirdrop } = useXP()
+  const { level, xpPercentage, canClaimLevelUp, claimLevelUp, isClaimingAirdrop, airdropStatus } = useXP()
   const { userName, isAuthenticated, walletAddress } = useAuth() // Obtenha o userName e estado da carteira
-  const { airdropStatus } = useAirDropStatus() // Importar airdropStatus
 
   // Filtra as disciplinas que têm 10 ou mais exercícios e memoiza o resultado
   const availableDisciplines = useMemo(() => {
