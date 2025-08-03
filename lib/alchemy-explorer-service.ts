@@ -251,7 +251,7 @@ class AlchemyExplorerService {
       let tokenSymbol = tx.tokenSymbol || "ETH"
       if (tx.contractAddress) {
         const knownTokens: Record<string, string> = {
-          "0x834a73c0a83F3BCe349A116FFB2A4c2d1C651E45": "TPF",
+          "0xb8dE16B8ED23760AB3699D5c7F6F889f1707a978": "WAY",
           "0x2cFc85d8E48F8EAB294be644d9E25C3030863003": "WLD",
           "0xED49fE44fD4249A09843C2Ba4bba7e50BECa7113": "DNA",
           "0xEdE54d9c024ee80C85ec0a75eD2d8774c7Fbac9B": "WDD",

@@ -8,6 +8,19 @@ export interface Transaction {
   from: string
   to: string
   timestamp: Date
-  status: "completed" | "pending" | "failed"
+  status: "pending" | "completed" | "failed"
   blockNumber: number
+}
+
+export interface TokenBalance {
+  symbol: string
+  address: string
+  balance: string
+  decimals: number
+}
+
+export interface WalletInfo {
+  address: string
+  balances: TokenBalance[]
+  transactions: Transaction[]
 }

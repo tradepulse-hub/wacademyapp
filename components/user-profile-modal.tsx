@@ -105,54 +105,48 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-white text-gray-900 p-6 rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-[350px] bg-white text-gray-900 p-4 rounded-lg shadow-lg">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">{t("user_profile_title")}</DialogTitle>
-          <DialogDescription className="text-center text-gray-600">{t("user_profile_description")}</DialogDescription>
+          <DialogTitle className="text-lg font-bold text-center">{t("user_profile_title")}</DialogTitle>
+          <DialogDescription className="text-center text-gray-600 text-sm">
+            {t("user_profile_description")}
+          </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-3 py-3">
           <div className="flex flex-col items-center gap-2">
-            <h3 className="text-xl font-semibold">
+            <h3 className="text-base font-semibold">
               {t("name")}: {userName || "Guest"}
             </h3>
             <div className="w-full flex flex-col items-center gap-1">
-              <span className="text-sm text-gray-700">
+              <span className="text-xs text-gray-700">
                 {t("level")} {level}
               </span>
-              <Progress value={xpPercentage} className="w-full h-3 bg-gray-200" indicatorClassName="bg-yellow-400" />
+              <Progress value={xpPercentage} className="w-full h-2 bg-gray-200" indicatorClassName="bg-yellow-400" />
               <span className="text-xs text-gray-500">{xpPercentage.toFixed(2)}% XP</span>
             </div>
           </div>
 
           {/* Wallet Balance Section */}
-          <div className="mt-4 flex flex-col items-center gap-2">
+          <div className="mt-2 flex flex-col items-center gap-2">
             <div className="flex items-center gap-2">
-              <Wallet className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold">{t("way_balance")}</h3>
+              <Wallet className="h-4 w-4 text-blue-600" />
+              <h3 className="text-sm font-semibold">{t("way_balance")}</h3>
             </div>
 
             {isAuthenticated && walletAddress ? (
               <div className="flex flex-col items-center gap-2 w-full">
-                <div className="bg-gray-50 p-3 rounded-lg w-full">
-                  <p className="text-xs text-gray-500 text-center mb-1">Wallet Address</p>
-                  <p className="text-sm text-gray-800 font-mono text-center">
-                    {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                  </p>
-                </div>
-
-                <div className="bg-blue-50 p-3 rounded-lg w-full">
+                <div className="bg-blue-50 p-2 rounded-lg w-full">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-blue-600 mb-1">WAY Token Balance</p>
+                    <div className="flex-1 text-center">
                       {isLoadingBalance ? (
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                          <span className="text-sm text-blue-600">Loading...</span>
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
+                          <span className="text-xs text-blue-600">Loading...</span>
                         </div>
                       ) : balanceError ? (
-                        <p className="text-sm text-red-600">{balanceError}</p>
+                        <p className="text-xs text-red-600">{balanceError}</p>
                       ) : (
-                        <p className="text-lg font-bold text-blue-800">
+                        <p className="text-sm font-bold text-blue-800">
                           {wayBalance ? `${Number.parseFloat(wayBalance).toLocaleString()} WAY` : "0 WAY"}
                         </p>
                       )}
@@ -162,21 +156,24 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
                       variant="ghost"
                       size="sm"
                       disabled={isLoadingBalance}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-blue-600 hover:text-blue-800 p-1 h-6 w-6"
                     >
-                      <RefreshCw className={`h-4 w-4 ${isLoadingBalance ? "animate-spin" : ""}`} />
+                      <RefreshCw className={`h-3 w-3 ${isLoadingBalance ? "animate-spin" : ""}`} />
                     </Button>
                   </div>
                 </div>
 
-                <Button onClick={handleDisconnectWallet} className="bg-red-600 hover:bg-red-700 text-white mt-2">
+                <Button
+                  onClick={handleDisconnectWallet}
+                  className="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-3 h-7"
+                >
                   Disconnect Wallet
                 </Button>
               </div>
             ) : (
               <Button
                 onClick={handleConnectWallet}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-3 h-7"
                 disabled={isAuthenticating || !userName}
               >
                 {isAuthenticating ? "Connecting..." : t("connect_wallet")}
@@ -185,16 +182,16 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
 
             {loginStatusMessage && (
               <p
-                className={`mt-2 text-center text-sm ${loginStatusType === "success" ? "text-green-600" : "text-red-600"}`}
+                className={`mt-1 text-center text-xs ${loginStatusType === "success" ? "text-green-600" : "text-red-600"}`}
               >
                 {loginStatusMessage}
               </p>
             )}
           </div>
 
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold text-center">{t("achievements")}</h3>
-            <div className="h-24 border border-dashed border-gray-300 rounded-md flex items-center justify-center text-gray-500 text-sm">
+          <div className="mt-2">
+            <h3 className="text-sm font-semibold text-center">{t("achievements")}</h3>
+            <div className="h-16 border border-dashed border-gray-300 rounded-md flex items-center justify-center text-gray-500 text-xs">
               {t("no_achievements_yet")}
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { ethers } from "ethers"
-import { WORLD_CHAIN_CONFIG, WAY_TOKEN_ADDRESS, ERC20_ABI } from "@/lib/constants"
+import { WAY_TOKEN_ADDRESS, WORLD_CHAIN_RPC_URL, ERC20_ABI } from "@/lib/constants"
 
 export async function GET(request: Request) {
   try {
@@ -8,39 +8,41 @@ export async function GET(request: Request) {
     const address = searchParams.get("address")
 
     if (!address) {
-      return NextResponse.json({ success: false, error: "Address parameter is required" }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Address parameter is required",
+        },
+        { status: 400 },
+      )
     }
 
-    console.log(`🔍 API: Getting WAY balance for ${address}`)
+    console.log(`🔍 Fetching WAY balance for address: ${address}`)
+    console.log(`📍 Token address: ${WAY_TOKEN_ADDRESS}`)
+    console.log(`🌐 RPC URL: ${WORLD_CHAIN_RPC_URL}`)
 
     // Create provider for World Chain
-    const provider = new ethers.JsonRpcProvider(WORLD_CHAIN_CONFIG.rpcUrl)
+    const provider = new ethers.JsonRpcProvider(WORLD_CHAIN_RPC_URL)
 
     // Create contract instance
     const contract = new ethers.Contract(WAY_TOKEN_ADDRESS, ERC20_ABI, provider)
 
     // Get balance and decimals
-    const [balance, decimals, symbol] = await Promise.all([
-      contract.balanceOf(address),
-      contract.decimals(),
-      contract.symbol(),
-    ])
+    const [balance, decimals] = await Promise.all([contract.balanceOf(address), contract.decimals()])
 
     // Format balance
     const formattedBalance = ethers.formatUnits(balance, decimals)
 
-    console.log(`✅ API: WAY balance retrieved: ${formattedBalance}`)
+    console.log(`✅ WAY balance fetched: ${formattedBalance}`)
 
     return NextResponse.json({
       success: true,
       balance: formattedBalance,
-      symbol: symbol,
-      address: address,
       tokenAddress: WAY_TOKEN_ADDRESS,
+      decimals: Number(decimals),
     })
   } catch (error) {
-    console.error("❌ API Error getting WAY balance:", error)
-
+    console.error("❌ Error fetching WAY balance:", error)
     return NextResponse.json(
       {
         success: false,
