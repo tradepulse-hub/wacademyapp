@@ -34,16 +34,16 @@ export function useAuth() {
         isAuthenticated: storedIsAuthenticated,
       })
 
-      if (storedIsAuthenticated && storedUserName) {
-        setAuthState({
-          isAuthenticated: storedIsAuthenticated,
-          walletAddress: storedWalletAddress,
-          userName: storedUserName,
-          isAuthenticating: false,
-        })
-        console.log("✅ Auth state restored from localStorage")
-      } else {
-        console.log("📊 No valid auth state found in localStorage")
+      // Sempre carregar o nome se existir, mesmo sem autenticação de carteira
+      setAuthState({
+        isAuthenticated: storedIsAuthenticated,
+        walletAddress: storedWalletAddress,
+        userName: storedUserName,
+        isAuthenticating: false,
+      })
+
+      if (storedUserName) {
+        console.log("✅ User name restored from localStorage:", storedUserName)
       }
 
       setIsInitialized(true)
@@ -73,6 +73,14 @@ export function useAuth() {
 
   const login = useCallback(async (name: string) => {
     console.log("🔐 Attempting login with wallet...")
+
+    // Sempre definir o nome primeiro
+    setAuthState((prev) => ({
+      ...prev,
+      userName: name,
+      isAuthenticating: true,
+    }))
+
     const isMiniKitInstalled = MiniKit.isInstalled()
     console.log("MiniKit.isInstalled():", isMiniKitInstalled)
 
@@ -87,8 +95,6 @@ export function useAuth() {
       setAuthState(newAuthState)
       return { success: true, message: "Logged in without wallet (MiniKit not installed)." }
     }
-
-    setAuthState((prev) => ({ ...prev, isAuthenticating: true }))
 
     try {
       // 1. Obter nonce do backend

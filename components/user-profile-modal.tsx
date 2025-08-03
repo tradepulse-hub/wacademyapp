@@ -73,11 +73,14 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
   }, [isOpen, userName, isAuthenticated, walletAddress, isInitialized])
 
   const handleConnectWallet = async () => {
-    if (userName) {
+    // Buscar o nome do localStorage se não estiver no estado
+    const currentUserName = userName || localStorage.getItem("worldAcademyUserName")
+
+    if (currentUserName) {
       setLoginStatusMessage(null)
       setLoginStatusType(null)
-      console.log("UserProfileModal: Attempting to connect wallet with userName:", userName)
-      const result = await login(userName)
+      console.log("UserProfileModal: Attempting to connect wallet with userName:", currentUserName)
+      const result = await login(currentUserName)
       if (result.success) {
         setLoginStatusMessage(result.message)
         setLoginStatusType("success")
@@ -124,6 +127,9 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
     )
   }
 
+  // Buscar o nome do localStorage se não estiver no estado
+  const displayName = userName || localStorage.getItem("worldAcademyUserName")
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[350px] bg-white text-gray-900 p-4 rounded-lg shadow-lg">
@@ -136,7 +142,7 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
         <div className="grid gap-3 py-3">
           <div className="flex flex-col items-center gap-2">
             <h3 className="text-base font-semibold">
-              {t("name")}: {userName || "Guest"}
+              {t("name")}: {displayName || "Guest"}
             </h3>
             <div className="w-full flex flex-col items-center gap-1">
               <span className="text-xs text-gray-700">
@@ -195,7 +201,7 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
               <Button
                 onClick={handleConnectWallet}
                 className="bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-3 h-7"
-                disabled={isAuthenticating || !userName}
+                disabled={isAuthenticating || !displayName}
               >
                 {isAuthenticating ? "Connecting..." : t("connect_wallet")}
               </Button>
