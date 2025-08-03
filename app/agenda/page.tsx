@@ -4,13 +4,15 @@ import { Calendar } from "@/components/ui/calendar"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { Plane, User, Loader2 } from "lucide-react" // Importar Loader2
+import { Plane, User, Loader2 } from "lucide-react"
 import { useXP } from "@/hooks/use-xp"
 import TeacherImage from "@/components/teacher-image"
 import SpeechBubble from "@/components/speech-bubble"
 import UserProfileModal from "@/components/user-profile-modal"
 import { useI18n } from "@/i18n/use-i18n"
 import { useAuth } from "@/hooks/use-auth"
+import { useToast } from "@/hooks/use-toast" // Importar useToast
+import { MiniKit } from "@worldcoin/minikit-js" // Importar MiniKit
 
 // Importar o conteúdo de cada disciplina
 import { mathematicsContent } from "@/content/disciplines/mathematics-content"
@@ -39,6 +41,10 @@ const allDisciplineContent: Record<string, ContentItem[]> = {
 // Versão da lógica de disciplinas diárias. Incremente para forçar uma nova geração.
 const DAILY_DISCIPLINES_VERSION = 2
 
+// Endereço do destinatário para a transferência de WLD
+const WLD_RECIPIENT_ADDRESS = "0xf04a78df4cc3017c0c23f37528d7b6cbbeea6677"
+const WLD_TRANSFER_AMOUNT = "2.8" // Quantidade de WLD a ser transferida
+
 export default function AgendaPage() {
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [showTripSpeech, setShowTripSpeech] = useState(false)
@@ -47,11 +53,13 @@ export default function AgendaPage() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [dailyDisciplinesForSelectedDate, setDailyDisciplinesForSelectedDate] = useState<string[]>([])
   const [speechTextForSelectedDate, setSpeechTextForSelectedDate] = useState("")
+  const [isTransferringWLD, setIsTransferringWLD] = useState(false) // Novo estado para o carregamento da transferência
   const router = useRouter()
   const { t, locale } = useI18n()
+  const { toast } = useToast() // Inicializar useToast
 
   const { level, xpPercentage, canClaimLevelUp, claimLevelUp, isClaimingAirdrop, airdropStatus } = useXP()
-  const { userName, isAuthenticated, walletAddress } = useAuth() // Obtenha o userName e estado da carteira
+  const { userName, isAuthenticated, walletAddress } = useAuth()
 
   // Filtra as disciplinas que têm 10 ou mais exercícios e memoiza o resultado
   const availableDisciplines = useMemo(() => {
@@ -95,9 +103,68 @@ export default function AgendaPage() {
 
   const teacherTripText = t("teacher_trip_text")
 
-  const handlePayTrip = () => {
-    router.push("/trip")
-    setShowTripSpeech(false)
+  const handlePayTrip = async () => {
+    if (!isAuthenticated || !walletAddress) {
+      toast({
+        title: "Erro",
+        description: "Por favor, conecte sua carteira para pagar a viagem.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsTransferringWLD(true)
+    setShowTripSpeech(false) // Fechar o balão de fala enquanto a transação está em andamento
+
+    try {
+      // 1. Obter os dados da transação do backend
+      const response = await fetch("/api/wld-transfer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipientAddress: WLD_RECIPIENT_ADDRESS,
+          amount: WLD_TRANSFER_AMOUNT,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Falha ao preparar a transação WLD.")
+      }
+
+      const { to, data, value, chainId } = await response.json()
+
+      // 2. Enviar a transação usando MiniKit
+      const transactionResult = await MiniKit.commandsAsync.sendTransaction({
+        to,
+        data,
+        value,
+        chainId,
+      })
+
+      if (transactionResult.status === "success") {
+        toast({
+          title: "Sucesso!",
+          description: `Transferência de ${WLD_TRANSFER_AMOUNT} WLD enviada. Hash da transação: ${transactionResult.transactionHash}`,
+          variant: "default",
+        })
+        // Opcional: Redirecionar ou atualizar UI após sucesso
+        router.push("/trip")
+      } else {
+        throw new Error(transactionResult.message || "Transação WLD falhou.")
+      }
+    } catch (error: any) {
+      console.error("Erro ao pagar a viagem:", error)
+      toast({
+        title: "Erro na Transferência",
+        description: error.message || "Ocorreu um erro ao transferir WLD.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsTransferringWLD(false)
+    }
   }
 
   const handleDeclineTrip = () => {
@@ -253,8 +320,9 @@ export default function AgendaPage() {
         }}
         className="absolute bottom-64 right-4 z-20 h-10 w-10 rounded-full bg-white border border-black text-black shadow-lg hover:bg-gray-100 transition-all duration-200"
         aria-label={t("study_visit")}
+        disabled={isTransferringWLD} // Desabilitar enquanto a transferência está em andamento
       >
-        <Plane className="h-6 w-6" />
+        {isTransferringWLD ? <Loader2 className="h-6 w-6 animate-spin" /> : <Plane className="h-6 w-6" />}
       </Button>
 
       {/* Teacher Image and Speech Bubble - Conditionally rendered based on context */}
@@ -273,7 +341,18 @@ export default function AgendaPage() {
             <SpeechBubble
               text={teacherTripText}
               buttons={[
-                { label: t("travel_wld", { amount: "2.8" }), onClick: handlePayTrip, variant: "default" },
+                {
+                  label: isTransferringWLD ? (
+                    <span className="flex items-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("processing_payment")}
+                    </span>
+                  ) : (
+                    t("travel_wld", { amount: WLD_TRANSFER_AMOUNT })
+                  ),
+                  onClick: handlePayTrip,
+                  variant: "default",
+                  disabled: isTransferringWLD,
+                },
                 { label: t("no_dont_want_to_go"), onClick: handleDeclineTrip, variant: "destructive" },
               ]}
               onClose={() => setShowTripSpeech(false)}
