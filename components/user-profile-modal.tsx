@@ -5,7 +5,8 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/i18n/use-i18n"
 import { useAuth } from "@/hooks/use-auth"
-import { useState, useEffect } from "react" // Import useEffect
+import { useState, useEffect } from "react"
+import { Loader2, Wallet, RefreshCw } from "lucide-react"
 
 interface UserProfileModalProps {
   isOpen: boolean
@@ -19,6 +20,45 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
   const { isAuthenticated, walletAddress, userName, login, logout, isAuthenticating } = useAuth()
   const [loginStatusMessage, setLoginStatusMessage] = useState<string | null>(null)
   const [loginStatusType, setLoginStatusType] = useState<"success" | "error" | null>(null)
+  const [wayBalance, setWayBalance] = useState<string | null>(null)
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false)
+  const [balanceError, setBalanceError] = useState<string | null>(null)
+
+  // Function to fetch WAY balance
+  const fetchWAYBalance = async (address: string) => {
+    setIsLoadingBalance(true)
+    setBalanceError(null)
+
+    try {
+      console.log(`🔍 Fetching WAY balance for: ${address}`)
+
+      const response = await fetch(`/api/get-way-balance?address=${address}`)
+      const data = await response.json()
+
+      if (data.success) {
+        setWayBalance(data.balance)
+        console.log(`✅ WAY balance loaded: ${data.balance}`)
+      } else {
+        throw new Error(data.error || "Failed to fetch balance")
+      }
+    } catch (error) {
+      console.error("❌ Error fetching WAY balance:", error)
+      setBalanceError("Failed to load balance")
+      setWayBalance(null)
+    } finally {
+      setIsLoadingBalance(false)
+    }
+  }
+
+  // Load balance when modal opens and wallet is connected
+  useEffect(() => {
+    if (isOpen && isAuthenticated && walletAddress) {
+      fetchWAYBalance(walletAddress)
+    } else {
+      setWayBalance(null)
+      setBalanceError(null)
+    }
+  }, [isOpen, isAuthenticated, walletAddress])
 
   // Log the userName when the modal opens or userName changes
   useEffect(() => {
@@ -29,7 +69,7 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
 
   const handleConnectWallet = async () => {
     if (userName) {
-      setLoginStatusMessage(null) // Clear previous message
+      setLoginStatusMessage(null)
       setLoginStatusType(null)
       console.log("UserProfileModal: Attempting to connect wallet with userName:", userName)
       const result = await login(userName)
@@ -50,9 +90,17 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
 
   const handleDisconnectWallet = async () => {
     await logout()
-    setLoginStatusMessage(null) // Clear message on disconnect
+    setLoginStatusMessage(null)
     setLoginStatusType(null)
+    setWayBalance(null)
+    setBalanceError(null)
     console.log("Wallet disconnected.")
+  }
+
+  const handleRefreshBalance = () => {
+    if (walletAddress) {
+      fetchWAYBalance(walletAddress)
+    }
   }
 
   return (
@@ -78,13 +126,49 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
 
           {/* Wallet Balance Section */}
           <div className="mt-4 flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold">{t("way_balance")}</h3>
+            <div className="flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-blue-600" />
+              <h3 className="text-lg font-semibold">{t("way_balance")}</h3>
+            </div>
+
             {isAuthenticated && walletAddress ? (
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-base text-gray-800 font-medium">
-                  {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                </p>
-                <p className="text-base text-gray-800 font-medium">0 WAY</p> {/* Placeholder for WAY balance */}
+              <div className="flex flex-col items-center gap-2 w-full">
+                <div className="bg-gray-50 p-3 rounded-lg w-full">
+                  <p className="text-xs text-gray-500 text-center mb-1">Wallet Address</p>
+                  <p className="text-sm text-gray-800 font-mono text-center">
+                    {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 p-3 rounded-lg w-full">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-blue-600 mb-1">WAY Token Balance</p>
+                      {isLoadingBalance ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                          <span className="text-sm text-blue-600">Loading...</span>
+                        </div>
+                      ) : balanceError ? (
+                        <p className="text-sm text-red-600">{balanceError}</p>
+                      ) : (
+                        <p className="text-lg font-bold text-blue-800">
+                          {wayBalance ? `${Number.parseFloat(wayBalance).toLocaleString()} WAY` : "0 WAY"}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      onClick={handleRefreshBalance}
+                      variant="ghost"
+                      size="sm"
+                      disabled={isLoadingBalance}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isLoadingBalance ? "animate-spin" : ""}`} />
+                    </Button>
+                  </div>
+                </div>
+
                 <Button onClick={handleDisconnectWallet} className="bg-red-600 hover:bg-red-700 text-white mt-2">
                   Disconnect Wallet
                 </Button>
@@ -93,11 +177,12 @@ export default function UserProfileModal({ isOpen, onClose, level, xpPercentage 
               <Button
                 onClick={handleConnectWallet}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
-                disabled={isAuthenticating || !userName} // Button is disabled if userName is null/empty
+                disabled={isAuthenticating || !userName}
               >
                 {isAuthenticating ? "Connecting..." : t("connect_wallet")}
               </Button>
             )}
+
             {loginStatusMessage && (
               <p
                 className={`mt-2 text-center text-sm ${loginStatusType === "success" ? "text-green-600" : "text-red-600"}`}
