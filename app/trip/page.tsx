@@ -21,13 +21,6 @@ export default function TripPage() {
         backgroundPosition: "center",
       }}
     >
-      {/* Overlay de bloqueio */}
-      {isLocked && (
-        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-40">
-          <Lock className="h-24 w-24 text-white animate-pulse" />
-        </div>
-      )}
-
       {/* Back Button - movido para depois do overlay de bloqueio para garantir que esteja acima */}
       <Button
         variant="ghost"
@@ -37,6 +30,13 @@ export default function TripPage() {
         <ChevronLeft className="h-6 w-6" />
         {t("back")}
       </Button>
+
+      {/* Overlay de bloqueio */}
+      {isLocked && (
+        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-40">
+          <Lock className="h-24 w-24 text-white animate-pulse" />
+        </div>
+      )}
 
       {/* Container para as janelas dos países, centralizado */}
       <div className="flex flex-wrap justify-center items-center gap-8 p-4 z-30">
