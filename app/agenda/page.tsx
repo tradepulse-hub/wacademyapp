@@ -197,13 +197,16 @@ export default function AgendaPage() {
           <Plane className="w-6 h-6 text-black" />
         </button>
 
+        {/* Swap Icon below Plane Icon */}
+        <ArrowLeftRight className="h-6 w-6 text-gray-600 cursor-pointer" onClick={() => router.push("/wallet")} />
+
         {/* Swap Button */}
-        <button
+        {/* <button
           onClick={() => router.push("/wallet")}
           className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
         >
           <ArrowLeftRight className="w-6 h-6 text-black" />
-        </button>
+        </button> */}
       </div>
 
       {/* Level Up Modal */}
