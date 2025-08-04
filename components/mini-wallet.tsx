@@ -1,5 +1,7 @@
 "use client"
 
+import { doSwap } from "@/services/swap-service"
+import { walletService } from "@/services/wallet-service"
 import { AnimatePresence, motion } from "framer-motion"
 import {
   AlertCircle,
@@ -14,22 +16,27 @@ import {
   Eye,
   EyeOff,
   History,
+  LogOut,
   Minimize2,
   RefreshCw,
   Send,
   Wallet,
 } from "lucide-react"
-import Image from "next/image"
+import Image from "next/image" // Importar o componente Image
 import { useCallback, useEffect, useState } from "react"
 
-// Definindo TOKENS para corresponder ao serviço de swap (mocked for UI display)
+import { Client, Multicall3 } from "@holdstation/worldchain-ethers-v6"
+import { config, HoldSo, inmemoryTokenStorage, SwapHelper, TokenProvider, ZeroX } from "@holdstation/worldchain-sdk"
+import { ethers } from "ethers"
+
+// Definindo TOKENS para corresponder ao serviço de swap
 const TOKENS = [
   {
     address: "0x2cFc85d8E48F8EAB294be644d9E25C3030863003",
     symbol: "WLD",
     name: "Worldcoin",
     decimals: 18,
-    logo: "/placeholder.svg?height=32&width=32",
+    logo: "/images/worldcoin.jpeg",
     color: "#000000",
   },
   {
@@ -37,15 +44,15 @@ const TOKENS = [
     symbol: "TPF",
     name: "TPulseFi",
     decimals: 18,
-    logo: "/placeholder.svg?height=32&width=32",
+    logo: "/images/logo-tpf.png",
     color: "#00D4FF",
   },
   {
-    address: "0xEdE54d9c024ee80C85ec0a75eD2d8774c7Fbac9B",
+    address: "0xEdE54d9c024ee80C85ec0a75eD2d8774c7Fbac9B", // Updated WDD address
     symbol: "WDD",
-    name: "Drachma",
+    name: "Drachma", // Updated name
     decimals: 18,
-    logo: "/placeholder.svg?height=32&width=32",
+    logo: "/images/drachma-token.png", // Updated logo path
     color: "#FFD700",
   },
   {
@@ -53,18 +60,39 @@ const TOKENS = [
     symbol: "USDC",
     name: "USD Coin",
     decimals: 6,
-    logo: "/placeholder.svg?height=32&width=32",
+    logo: "/images/usdc.png",
     color: "#2775CA",
   },
   {
     address: "0x5fa570E9c8514cdFaD81DB6ce0A327D55251fBD4",
-    symbol: "KPP",
+    symbol: "KPP", // Assuming KPP as symbol for KeplerPay
     name: "KeplerPay",
-    decimals: 18,
-    logo: "/placeholder.svg?height=32&width=32",
-    color: "#6A0DAD",
+    decimals: 18, // Assuming 18 decimals
+    logo: "/images/keplerpay-logo.png",
+    color: "#6A0DAD", // Deep purple color
   },
 ]
+
+const USDC_TOKEN_INFO = TOKENS.find((token) => token.symbol === "USDC")
+const USDC_ADDRESS = USDC_TOKEN_INFO?.address
+
+// Configuração do SDK Holdstation (mantida aqui para a função de cotação)
+const RPC_URL = "https://worldchain-mainnet.g.alchemy.com/public"
+const provider = new ethers.JsonRpcProvider(RPC_URL, { chainId: 480, name: "worldchain" }, { staticNetwork: true })
+const client = new Client(provider)
+config.client = client
+config.multicall3 = new Multicall3(provider)
+const swapHelper = new SwapHelper(client, {
+  tokenStorage: inmemoryTokenStorage,
+})
+const tokenProvider = new TokenProvider({
+  client,
+  multicall3: config.multicall3,
+})
+const zeroX = new ZeroX(tokenProvider, inmemoryTokenStorage)
+const worldSwap = new HoldSo(tokenProvider, inmemoryTokenStorage)
+swapHelper.load(zeroX)
+swapHelper.load(worldSwap)
 
 interface TokenBalance {
   symbol: string
@@ -88,7 +116,9 @@ interface Transaction {
 }
 
 interface MiniWalletProps {
-  walletAddress?: string // Made optional for mocking
+  walletAddress: string
+  onMinimize: () => void
+  onDisconnect: () => void
 }
 
 // Supported languages
@@ -340,9 +370,18 @@ const translations = {
   },
 }
 
+interface Token {
+  symbol: string
+  name: string
+  address: string
+  decimals: number
+  logo: string
+  color: string
+}
+
 type ViewMode = "main" | "send" | "receive" | "history" | "swap"
 
-export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567890abcdef" }: MiniWalletProps) {
+export default function MiniWallet({ walletAddress, onMinimize, onDisconnect }: MiniWalletProps) {
   const [currentLang, setCurrentLang] = useState<SupportedLanguage>("en")
   const [viewMode, setViewMode] = useState<ViewMode>("main")
   const [copied, setCopied] = useState(false)
@@ -363,8 +402,8 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
     recipient: "",
   })
   const [swapForm, setSwapForm] = useState({
-    tokenFrom: "WLD",
-    tokenTo: "TPF",
+    tokenFrom: "WLD", // Default to WLD
+    tokenTo: "TPF", // Default to TPF
     amountFrom: "",
     amountTo: "",
   })
@@ -375,6 +414,9 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
   const [quoteError, setQuoteError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isMinimized, setIsMinimized] = useState(false)
+
+  // Removido: const [tokenUnitPrices, setTokenUnitPrices] = useState<Record<string, number>>({})
+  // Removido: const [loadingPrices, setLoadingPrices] = useState(true)
 
   const TRANSACTIONS_PER_PAGE = 5
 
@@ -399,57 +441,22 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
     setTimeout(() => setCopied(false), 2000)
   }, [walletAddress])
 
-  // Mocked loadBalances
+  // Removido: loadTokenUnitPrices function
+  // const loadTokenUnitPrices = useCallback(async () => { ... }, [USDC_ADDRESS])
+
   const loadBalances = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      // Mock data for balances
-      const mockBalances: TokenBalance[] = [
-        {
-          symbol: "WLD",
-          name: "Worldcoin",
-          address: "0x...",
-          balance: "100.5",
-          decimals: 18,
-          formattedBalance: "100.50",
-        },
-        {
-          symbol: "TPF",
-          name: "TPulseFi",
-          address: "0x...",
-          balance: "500.25",
-          decimals: 18,
-          formattedBalance: "500.25",
-        },
-        {
-          symbol: "USDC",
-          name: "USD Coin",
-          address: "0x...",
-          balance: "75.123456",
-          decimals: 6,
-          formattedBalance: "75.123456",
-        },
-        { symbol: "WDD", name: "Drachma", address: "0x...", balance: "0", decimals: 18, formattedBalance: "0" },
-        {
-          symbol: "KPP",
-          name: "KeplerPay",
-          address: "0x...",
-          balance: "123.45",
-          decimals: 18,
-          formattedBalance: "123.45",
-        },
-      ]
-      await new Promise((resolve) => setTimeout(resolve, 500)) // Simulate API call
-      setBalances(mockBalances)
+      const tokenBalances = await walletService.getTokenBalances(walletAddress)
+      setBalances(tokenBalances)
     } catch (error) {
-      setError("Failed to load balances (mocked)")
+      setError("Failed to load balances")
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [walletAddress])
 
-  // Mocked loadTransactionHistory
   const loadTransactionHistory = useCallback(
     async (reset = false) => {
       try {
@@ -461,89 +468,16 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
           setLoadingMore(true)
         }
 
-        // Mock data for transactions
-        const mockTransactions: Transaction[] = [
-          {
-            id: "1",
-            type: "sent",
-            token: "WLD",
-            amount: "10",
-            address: "0xabc...def",
-            status: "confirmed",
-            timestamp: Date.now() - 3600000,
-            hash: "0xmockhash1",
-          },
-          {
-            id: "2",
-            type: "received",
-            token: "TPF",
-            amount: "50",
-            address: "0xdef...ghi",
-            status: "confirmed",
-            timestamp: Date.now() - 7200000,
-            hash: "0xmockhash2",
-          },
-          {
-            id: "3",
-            type: "sent",
-            token: "USDC",
-            amount: "5",
-            address: "0xghi...jkl",
-            status: "pending",
-            timestamp: Date.now() - 1800000,
-            hash: "0xmockhash3",
-          },
-          {
-            id: "4",
-            type: "received",
-            token: "WLD",
-            amount: "20",
-            address: "0xjkl...mno",
-            status: "confirmed",
-            timestamp: Date.now() - 10800000,
-            hash: "0xmockhash4",
-          },
-          {
-            id: "5",
-            type: "sent",
-            token: "TPF",
-            amount: "100",
-            address: "0xopq...rst",
-            status: "failed",
-            timestamp: Date.now() - 14400000,
-            hash: "0xmockhash5",
-          },
-          {
-            id: "6",
-            type: "received",
-            token: "USDC",
-            amount: "10",
-            address: "0xuvw...xyz",
-            status: "confirmed",
-            timestamp: Date.now() - 18000000,
-            hash: "0xmockhash6",
-          },
-          {
-            id: "7",
-            type: "sent",
-            token: "WLD",
-            amount: "2",
-            address: "0x123...456",
-            status: "pending",
-            timestamp: Date.now() - 21600000,
-            hash: "0xmockhash7",
-          },
-        ]
+        const limit = (currentPage + 1) * TRANSACTIONS_PER_PAGE + 5
+        const history = await walletService.getTransactionHistory(walletAddress, limit)
 
-        await new Promise((resolve) => setTimeout(resolve, 500)) // Simulate API call
-
-        setAllTransactions(mockTransactions)
+        setAllTransactions(history)
 
         const newDisplayCount = (currentPage + 1) * TRANSACTIONS_PER_PAGE
-        const newDisplayed = mockTransactions.slice(0, Math.min(mockTransactions.length, newDisplayCount))
+        const newDisplayed = history.slice(0, Math.min(history.length, newDisplayCount))
 
         setDisplayedTransactions(newDisplayed)
-        setHasMoreTransactions(mockTransactions.length > newDisplayCount)
+        setHasMoreTransactions(allTransactions.length > newDisplayCount)
       } catch (error) {
         // console.error("❌ Error loading transaction history:", error) // Removed verbose log
       } finally {
@@ -551,7 +485,7 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
         setLoadingMore(false)
       }
     },
-    [currentPage],
+    [walletAddress, currentPage, allTransactions],
   )
 
   const loadMoreTransactions = useCallback(async () => {
@@ -572,36 +506,39 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
   const refreshBalances = useCallback(async () => {
     setRefreshing(true)
     await loadBalances()
+    // Removido: await loadTokenUnitPrices() // Refresh unit prices as well
     setRefreshing(false)
-  }, [loadBalances])
+  }, [loadBalances]) // Removido loadTokenUnitPrices da dependência
 
-  // Mocked handleSend
   const handleSend = useCallback(async () => {
     if (!sendForm.amount || !sendForm.recipient) return
 
     setSending(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000)) // Simulate network delay
-      const success = Math.random() > 0.2 // 80% success rate for mock
+      const selectedToken = balances.find((t) => t.symbol === sendForm.token)
+      const result = await walletService.sendToken({
+        to: sendForm.recipient,
+        amount: Number.parseFloat(sendForm.amount),
+        tokenAddress: selectedToken?.address,
+      })
 
-      if (success) {
+      if (result.success) {
         alert(`✅ ${t.sendSuccess} ${sendForm.amount} ${sendForm.token}!`)
         setViewMode("main")
         setSendForm({ token: "TPF", amount: "", recipient: "" })
         await refreshBalances()
         await loadTransactionHistory(true)
       } else {
-        alert(`❌ ${t.sendFailed}: Mocked error`)
+        alert(`❌ ${t.sendFailed}: ${result.error}`)
       }
     } catch (error) {
-      console.error("❌ Send error (mocked):", error)
+      console.error("❌ Send error:", error) // Kept for critical error
       alert(`❌ ${t.sendFailed}. ${t.tryAgain}`)
     } finally {
       setSending(false)
     }
-  }, [sendForm, t.sendSuccess, t.sendFailed, t.tryAgain, refreshBalances, loadTransactionHistory])
+  }, [sendForm, balances, t.sendSuccess, t.sendFailed, t.tryAgain, refreshBalances, loadTransactionHistory])
 
-  // Mocked getSwapQuote
   const getSwapQuote = useCallback(
     async (amountFrom: string, tokenFromSymbol: string, tokenToSymbol: string) => {
       if (
@@ -619,29 +556,73 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
       setGettingQuote(true)
       setQuoteError(null)
 
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1500)) // Simulate API call
+      const tokenInObj = TOKENS.find((t) => t.symbol === tokenFromSymbol)
+      const tokenOutObj = TOKENS.find((t) => t.symbol === tokenToSymbol)
 
-        const mockQuote = {
-          outAmount: (Number.parseFloat(amountFrom) * 0.98).toString(), // Simulate 2% slippage
-          data: "0xmockdata",
-          to: "0xmockcontract",
-          value: "0",
+      if (!tokenInObj || !tokenOutObj) {
+        setQuoteError("Invalid token selection.")
+        setGettingQuote(false)
+        return
+      }
+
+      try {
+        const cleanAmount = Number.parseFloat(amountFrom).toFixed(tokenInObj.decimals)
+
+        const quote = await swapHelper.estimate.quote({
+          tokenIn: tokenInObj.address,
+          tokenOut: tokenOutObj.address,
+          amountIn: cleanAmount,
+          slippage: "0.3",
+
+          fee: "0.2",
+          feeReceiver: ethers.ZeroAddress,
+        })
+
+        if (!quote || !quote.data || !quote.to || (!quote.outAmount && !quote.addons?.outAmount)) {
+          throw new Error("Invalid quote received from SDK: Missing data, to, or outAmount.")
         }
-        setSwapQuote(mockQuote)
+
+        setSwapQuote(quote)
+
+        let outputAmountString = "0"
+        if (quote.outAmount) {
+          outputAmountString = quote.outAmount.toString()
+        } else if (quote.addons?.outAmount) {
+          outputAmountString = quote.addons.outAmount.toString()
+        } else {
+          throw new Error("Could not determine output amount from quote.")
+        }
+
+        const parsedAmount = Number.parseFloat(outputAmountString)
+
+        const finalAmount = parsedAmount.toFixed(tokenOutObj.decimals > 6 ? 6 : tokenOutObj.decimals)
+
         setSwapForm((prev) => ({
           ...prev,
-          amountTo: (Number.parseFloat(amountFrom) * 0.98).toFixed(6),
+          amountTo: finalAmount,
         }))
       } catch (error) {
-        setQuoteError(t.quoteError)
+        let errorMessage = t.quoteError
+        if (error instanceof Error) {
+          if (error.message?.includes("timeout")) {
+            errorMessage = `${t.networkError}. ${t.tryAgain}`
+          } else if (error.message?.includes("Network")) {
+            errorMessage = `${t.networkError}. ${t.tryAgain}`
+          } else if (error.message?.includes("insufficient")) {
+            errorMessage = t.insufficientBalance
+          } else {
+            errorMessage = `${t.quoteError}: ${error.message}`
+          }
+        }
+
+        setQuoteError(errorMessage)
         setSwapQuote(null)
         setSwapForm((prev) => ({ ...prev, amountTo: "" }))
       } finally {
         setGettingQuote(false)
       }
     },
-    [t.quoteError],
+    [t.quoteError, t.networkError, t.tryAgain, t.insufficientBalance],
   )
 
   // Auto-quote effect with debounce
@@ -655,16 +636,38 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
     return () => clearTimeout(timeoutId)
   }, [swapForm.amountFrom, swapForm.tokenFrom, swapForm.tokenTo, getSwapQuote])
 
-  // Mocked handleSwap
   const handleSwap = useCallback(async () => {
     if (!swapQuote || !swapForm.amountFrom || !swapForm.tokenFrom || !swapForm.tokenTo) return
 
     setSwapping(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2500)) // Simulate network delay
-      const success = Math.random() > 0.2 // 80% success rate for mock
+      const tokenFromBalance = balances.find((t) => t.symbol === swapForm.tokenFrom)
+      if (!tokenFromBalance || Number.parseFloat(tokenFromBalance.balance) < Number.parseFloat(swapForm.amountFrom)) {
+        throw new Error(
+          `${t.insufficientBalance}. Available: ${
+            tokenFromBalance?.balance || "0"
+          }, Required: ${swapForm.amountFrom} ${swapForm.tokenFrom}`,
+        )
+      }
 
-      if (success) {
+      if (!swapQuote.data || !swapQuote.to) {
+        throw new Error("Invalid swap quote")
+      }
+
+      const tokenInObj = TOKENS.find((t) => t.symbol === swapForm.tokenFrom)
+      if (!tokenInObj) throw new Error("Input token not found.")
+
+      const cleanAmount = Number.parseFloat(swapForm.amountFrom).toFixed(tokenInObj.decimals)
+
+      const swapResult = await doSwap({
+        walletAddress,
+        quote: swapQuote,
+        amountIn: cleanAmount,
+        tokenInSymbol: swapForm.tokenFrom,
+        tokenOutSymbol: swapForm.tokenTo,
+      })
+
+      if (swapResult && swapResult.success) {
         alert(
           `✅ ${t.swapSuccess} ${swapForm.amountFrom} ${swapForm.tokenFrom} for ${swapForm.amountTo} ${swapForm.tokenTo}!`,
         )
@@ -679,15 +682,50 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
         await refreshBalances()
         await loadTransactionHistory(true)
       } else {
-        alert(`❌ ${t.swapFailed}: Mocked error`)
+        let errorMessage = t.swapFailed
+        if (swapResult && swapResult.errorCode) {
+          errorMessage = `${t.swapFailed}: ${swapResult.errorCode}`
+        } else if (swapResult && swapResult.error instanceof Error) {
+          errorMessage = `${t.swapFailed}: ${swapResult.error.message}`
+        } else if (!swapResult) {
+          errorMessage = `${t.swapFailed}: ${t.tryAgain} (No result from swap service)`
+        }
+        throw new Error(errorMessage)
       }
     } catch (error) {
-      console.error("❌ Swap error (mocked):", error)
-      alert(`❌ ${t.swapFailed}. ${t.tryAgain}`)
+      console.error("❌ Swap error:", error) // Kept for critical error
+
+      let errorMessage = t.swapFailed
+      if (error instanceof Error) {
+        if (error.message?.includes("Insufficient") || error.message?.includes("insuficiente")) {
+          errorMessage = `${t.swapFailed}: ${t.insufficientBalance}`
+        } else if (error.message?.includes("timeout")) {
+          errorMessage = `${t.swapFailed}: ${t.networkError}. ${t.tryAgain}`
+        } else if (error.message?.includes("Network")) {
+          errorMessage = `${t.swapFailed}: ${t.networkError}. ${t.tryAgain}`
+        } else if (error.message?.includes("simulation_failed")) {
+          errorMessage = `${t.swapFailed}: Simulation failed. The quote might be invalid or expired.`
+        } else {
+          errorMessage = `${t.swapFailed}: ${error.message}`
+        }
+      }
+
+      alert(`❌ ${errorMessage}`)
     } finally {
       setSwapping(false)
     }
-  }, [swapQuote, swapForm, t.swapSuccess, t.swapFailed, t.tryAgain, refreshBalances, loadTransactionHistory])
+  }, [
+    swapQuote,
+    swapForm,
+    balances,
+    t.insufficientBalance,
+    t.swapSuccess,
+    t.swapFailed,
+    t.tryAgain,
+    t.networkError,
+    refreshBalances,
+    loadTransactionHistory,
+  ])
 
   const handleBackToMain = useCallback(() => {
     setViewMode("main")
@@ -703,8 +741,7 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
   }, [])
 
   const openTransactionInExplorer = useCallback((hash: string) => {
-    // Mocked explorer URL
-    const explorerUrl = `https://explorer.worldchain.com/tx/${hash}`
+    const explorerUrl = walletService.getExplorerTransactionUrl(hash)
     window.open(explorerUrl, "_blank")
   }, [])
 
@@ -813,7 +850,7 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
             >
               {/* Banner de Promoção */}
               <Image
-                src="/placeholder.svg?height=100&width=350"
+                src="/images/promotion-banner.jpg"
                 alt="Swap Reward Prize Pool Banner"
                 width={175} // Metade da largura original
                 height={50} // Metade da altura original
@@ -841,13 +878,19 @@ export default function MiniWallet({ walletAddress = "0xMockWalletAddress1234567
                     {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                   </button>
                   <button
-                    onClick={() => setIsMinimized(true)}
+                    onClick={() => onMinimize()}
                     className="p-1.5 text-gray-600 hover:text-gray-800 transition-colors rounded-lg hover:bg-gray-200"
                     title="Minimize to icon"
                   >
                     <Minimize2 className="w-3 h-3" />
                   </button>
-                  {/* Disconnect button removed as per "tira as dependencias" */}
+                  <button
+                    onClick={onDisconnect}
+                    className="p-1.5 text-gray-600 hover:text-red-400 transition-colors rounded-lg hover:bg-gray-200"
+                    title={t.disconnect}
+                  >
+                    <LogOut className="w-3 h-3" />
+                  </button>
                 </div>
               </div>
 
