@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,14 @@ export default function WorldAcademyWelcome() {
 
   const teacherText = t("invitation_teacher_text")
 
+  useEffect(() => {
+    // Verifica se o convite já foi visto no localStorage
+    const hasSeenInvitation = localStorage.getItem("worldAcademyInvitationSeen")
+    if (hasSeenInvitation === "true") {
+      router.replace("/agenda") // Redireciona para a agenda se já viu o convite
+    }
+  }, [router])
+
   const handlePresentWorldID = async () => {
     if (!userNameInput) return // Garante que o nome foi inserido
 
@@ -28,6 +36,7 @@ export default function WorldAcademyWelcome() {
     if (!MiniKit.isInstalled()) {
       console.error("World App (MiniKit) is not installed.")
       // Você pode adicionar um fallback ou mensagem para o usuário aqui
+      localStorage.setItem("worldAcademyInvitationSeen", "true") // Marca como visto mesmo sem verificação
       router.push("/agenda") // Navega mesmo sem verificação se o app não estiver instalado
       return
     }
@@ -68,10 +77,12 @@ export default function WorldAcademyWelcome() {
           console.error("Backend verification failed (but proceeding):", verifyResponseJson)
         }
       }
+      localStorage.setItem("worldAcademyInvitationSeen", "true") // Marca como visto após a tentativa de verificação
       // Navega para a agenda independentemente do resultado da verificação do backend
       router.push("/agenda")
     } catch (error) {
       console.error("Error during World ID process or backend call (but proceeding):", error)
+      localStorage.setItem("worldAcademyInvitationSeen", "true") // Marca como visto mesmo em caso de erro
       router.push("/agenda") // Garante navegação mesmo em caso de erro na chamada fetch
     } finally {
       setIsVerifying(false) // Finaliza o estado de carregamento
