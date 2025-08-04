@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { Plane, User, Loader2, ArrowLeftRight } from "lucide-react" // Importar ArrowLeftRight
+import { Plane, User, Loader2 } from "lucide-react" // Importar Loader2
 import { useXP } from "@/hooks/use-xp"
 import TeacherImage from "@/components/teacher-image"
 import SpeechBubble from "@/components/speech-bubble"
@@ -255,17 +255,6 @@ export default function AgendaPage() {
         aria-label={t("study_visit")}
       >
         <Plane className="h-6 w-6" />
-      </Button>
-
-      {/* Swap Button below Plane button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => router.push("/wallet")}
-        className="absolute bottom-48 right-4 z-20 h-10 w-10 rounded-full bg-white border border-black text-black shadow-lg hover:bg-gray-100 transition-all duration-200"
-        aria-label="Wallet Swap"
-      >
-        <ArrowLeftRight className="h-6 w-6" />
       </Button>
 
       {/* Teacher Image and Speech Bubble - Conditionally rendered based on context */}
