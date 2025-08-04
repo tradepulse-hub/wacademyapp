@@ -58,7 +58,8 @@ export function useXP() {
   }, [fetchAirdropStatus])
 
   const addXP = (amount: number) => {
-    setTotalXP((prevXP) => prevXP + amount)
+    // Reduz a experiência ganha para 1% do valor original
+    setTotalXP((prevXP) => prevXP + amount * 0.01)
   }
 
   const xpForCurrentLevel = totalXP - (claimedLevel - 1) * XP_PER_LEVEL
