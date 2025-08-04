@@ -31,10 +31,7 @@ export default function TripPage() {
       {/* Container para as janelas dos países, centralizado */}
       <div className="flex flex-wrap justify-center items-center gap-8 p-4 z-30">
         {/* Portugal Window */}
-        <div
-          className="flex flex-col items-center gap-2 cursor-pointer"
-          onClick={() => router.push("/candy-crush")} // Adicionado onClick para navegar para o jogo
-        >
+        <div className="flex flex-col items-center gap-2 cursor-pointer">
           <div className="relative w-40 h-40 border-4 border-white rounded-lg overflow-hidden shadow-lg">
             <Image
               src="/images/portugal-monument.png"
