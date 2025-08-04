@@ -20,5 +20,6 @@
   "no_achievements_yet": "Nenhuma conquista ainda.",
   "user_name_missing_for_wallet_connect": "Nome de usuário ausente. Por favor, insira seu nome primeiro.",
   "airdrop_blocked_message": "Seu endereço está bloqueado para reivindicar airdrops.",
-  "airdrop_daily_limit_reached": "Você atingiu o limite diário de {{count}} reivindicações."
+  "airdrop_daily_limit_reached": "Você atingiu o limite diário de {{count}} reivindicações.",
+  "correct_answer_xp": "Correto! +1% XP"
 }
