@@ -1,233 +1,315 @@
 "use client"
-
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Calendar } from "@/components/ui/calendar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { CalendarDays, Plane, ArrowLeftRight, Trophy, BookOpen, Clock, Star } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { useRouter } from "next/navigation"
+import { Plane, User, Loader2 } from "lucide-react" // Importar Loader2
 import { useXP } from "@/hooks/use-xp"
+import TeacherImage from "@/components/teacher-image"
+import SpeechBubble from "@/components/speech-bubble"
+import UserProfileModal from "@/components/user-profile-modal"
 import { useI18n } from "@/i18n/use-i18n"
+import { useAuth } from "@/hooks/use-auth"
 
-interface AgendaEvent {
-  id: string
-  title: string
-  date: Date
-  type: "lesson" | "exam" | "assignment" | "event"
-  subject: string
-  completed?: boolean
-  xpReward?: number
+// Importar o conteúdo de cada disciplina
+import { mathematicsContent } from "@/content/disciplines/mathematics-content"
+import { memoryContent } from "@/content/disciplines/memory-content"
+import { financeContent } from "@/content/disciplines/finance-content"
+import { historyContent } from "@/content/disciplines/history-content"
+import { geographyContent } from "@/content/disciplines/geography-content"
+import { scienceContent } from "@/content/disciplines/science-content"
+import { artsContent } from "@/content/disciplines/arts-content"
+import { literatureContent } from "@/content/disciplines/literature-content"
+import type { ContentItem } from "@/content/disciplines/types"
+
+// Mapeamento de todos os conteúdos das disciplinas
+const allDisciplineContent: Record<string, ContentItem[]> = {
+  mathematics: mathematicsContent,
+  memory: memoryContent,
+  finance: financeContent,
+  history: historyContent,
+  geography: geographyContent,
+  science: scienceContent,
+  arts: artsContent,
+  literature: literatureContent,
+  // Adicione outras disciplinas aqui se criar novos arquivos de conteúdo
 }
 
+// Versão da lógica de disciplinas diárias. Incremente para forçar uma nova geração.
+const DAILY_DISCIPLINES_VERSION = 2
+
 export default function AgendaPage() {
+  const [date, setDate] = useState<Date | undefined>(new Date())
+  const [showTripSpeech, setShowTripSpeech] = useState(false)
+  const [showDailyDisciplinesSpeech, setShowDailyDisciplinesSpeech] = useState(false)
+  const [showWelcomeAgendaSpeech, setShowWelcomeAgendaSpeech] = useState(true)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const [dailyDisciplinesForSelectedDate, setDailyDisciplinesForSelectedDate] = useState<string[]>([])
+  const [speechTextForSelectedDate, setSpeechTextForSelectedDate] = useState("")
   const router = useRouter()
-  const { user } = useAuth()
-  const { xp, level, addXP } = useXP()
-  const { t } = useI18n()
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [events, setEvents] = useState<AgendaEvent[]>([])
-  const [showLevelUpModal, setShowLevelUpModal] = useState(false)
+  const { t, locale } = useI18n()
 
-  // Mock events data
+  const { level, xpPercentage, canClaimLevelUp, claimLevelUp, isClaimingAirdrop, airdropStatus } = useXP()
+  const { userName, isAuthenticated, walletAddress } = useAuth() // Obtenha o userName e estado da carteira
+
+  // Filtra as disciplinas que têm 10 ou mais exercícios e memoiza o resultado
+  const availableDisciplines = useMemo(() => {
+    return Object.keys(allDisciplineContent)
+      .filter((slug) => allDisciplineContent[slug].length >= 10)
+      .map((slug) => slug.charAt(0).toUpperCase() + slug.slice(1))
+  }, [])
+
+  // Função para formatar a data para a chave do localStorage
+  const formatDateKey = (d: Date) => d.toISOString().slice(0, 10)
+
+  // Função para gerar e armazenar disciplinas diárias
+  const generateAndStoreDailyDisciplines = useCallback(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    // Usando a chave versionada para o localStorage
+    const todayKey = `worldAcademyDailyDisciplines_v${DAILY_DISCIPLINES_VERSION}_${formatDateKey(today)}`
+    const storedDisciplines = localStorage.getItem(todayKey)
+
+    let disciplinesToUse: string[]
+    if (storedDisciplines) {
+      disciplinesToUse = JSON.parse(storedDisciplines)
+    } else {
+      const shuffled = [...availableDisciplines].sort(() => 0.5 - Math.random())
+      // Alterado para selecionar apenas 2 disciplinas
+      disciplinesToUse = shuffled.slice(0, 2)
+      localStorage.setItem(todayKey, JSON.stringify(disciplinesToUse))
+    }
+    setDailyDisciplinesForSelectedDate(disciplinesToUse)
+    setSpeechTextForSelectedDate(t("disciplines_for_date", { date: today.toLocaleDateString(locale) }))
+  }, [availableDisciplines, t, locale])
+
+  // Mensagem inicial do professor para a agenda
+  const initialAgendaWelcomeText = t("welcome_teacher_text")
+
+  // Efeito para carregar as disciplinas do dia atual ao montar
   useEffect(() => {
-    const mockEvents: AgendaEvent[] = [
-      {
-        id: "1",
-        title: t("agenda.mathQuiz"),
-        date: new Date(),
-        type: "exam",
-        subject: "Mathematics",
-        xpReward: 50,
-      },
-      {
-        id: "2",
-        title: t("agenda.historyEssay"),
-        date: new Date(Date.now() + 86400000), // Tomorrow
-        type: "assignment",
-        subject: "History",
-        xpReward: 75,
-      },
-      {
-        id: "3",
-        title: t("agenda.scienceLab"),
-        date: new Date(Date.now() + 172800000), // Day after tomorrow
-        type: "lesson",
-        subject: "Science",
-        xpReward: 30,
-      },
-    ]
-    setEvents(mockEvents)
-  }, [t])
+    generateAndStoreDailyDisciplines()
+    setShowWelcomeAgendaSpeech(true)
+  }, [generateAndStoreDailyDisciplines])
 
-  const handleCompleteEvent = (eventId: string) => {
-    setEvents((prev) => prev.map((event) => (event.id === eventId ? { ...event, completed: true } : event)))
+  const teacherTripText = t("teacher_trip_text")
 
-    const event = events.find((e) => e.id === eventId)
-    if (event?.xpReward) {
-      const newLevel = addXP(event.xpReward)
-      if (newLevel > level) {
-        setShowLevelUpModal(true)
-      }
-    }
+  const handlePayTrip = () => {
+    router.push("/trip")
+    setShowTripSpeech(false)
   }
 
-  const getEventsForDate = (date: Date) => {
-    return events.filter((event) => event.date.toDateString() === date.toDateString())
+  const handleDeclineTrip = () => {
+    setShowTripSpeech(false)
   }
 
-  const getEventIcon = (type: string) => {
-    switch (type) {
-      case "lesson":
-        return <BookOpen className="w-4 h-4" />
-      case "exam":
-        return <Trophy className="w-4 h-4" />
-      case "assignment":
-        return <Clock className="w-4 h-4" />
-      default:
-        return <CalendarDays className="w-4 h-4" />
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (!selectedDate) {
+      setShowDailyDisciplinesSpeech(false)
+      return
     }
-  }
 
-  const getEventColor = (type: string) => {
-    switch (type) {
-      case "lesson":
-        return "bg-blue-100 text-blue-800"
-      case "exam":
-        return "bg-red-100 text-red-800"
-      case "assignment":
-        return "bg-yellow-100 text-yellow-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const selectedDay = new Date(selectedDate)
+    selectedDay.setHours(0, 0, 0, 0)
+
+    setShowTripSpeech(false)
+    setShowWelcomeAgendaSpeech(false)
+
+    if (selectedDay.getTime() === today.getTime()) {
+      // Usando a chave versionada para o localStorage
+      const todayKey = `worldAcademyDailyDisciplines_v${DAILY_DISCIPLINES_VERSION}_${formatDateKey(today)}`
+      const storedDisciplines = localStorage.getItem(todayKey)
+      const disciplinesToUse = storedDisciplines ? JSON.parse(storedDisciplines) : []
+
+      setDailyDisciplinesForSelectedDate(disciplinesToUse)
+      setSpeechTextForSelectedDate(t("disciplines_for_date", { date: selectedDate.toLocaleDateString(locale) }))
+      setShowDailyDisciplinesSpeech(true)
+    } else {
+      setDailyDisciplinesForSelectedDate([])
+      setSpeechTextForSelectedDate(t("no_disciplines_available", { date: selectedDate.toLocaleDateString(locale) }))
+      setShowDailyDisciplinesSpeech(true)
     }
+    setDate(selectedDate)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
-            <CalendarDays className="w-6 h-6 text-blue-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">{t("agenda.title")}</h1>
-            <p className="text-gray-600">{t("agenda.subtitle")}</p>
-          </div>
+    <div
+      className="flex h-screen overflow-hidden flex-col items-center justify-start pt-0 px-4"
+      style={{
+        backgroundImage: 'url("/images/books-background.png")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      {/* Title Banner */}
+      <div
+        className="relative flex items-center justify-center w-full max-w-xl h-32 mt-0"
+        style={{
+          backgroundImage: 'url("/images/logoplace.png")',
+          backgroundSize: "contain",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+        }}
+      >
+        <Image
+          src="/images/logowacademyrb.png"
+          alt="WAcademy Logo"
+          width={75}
+          height={75}
+          className="z-10 object-contain"
+        />
+      </div>
+
+      {/* XP Bar */}
+      <div className="absolute top-[21%] left-1/2 -translate-x-1/2 w-[40%] max-w-md bg-gray-800 rounded-full h-6 flex items-center justify-between px-2 z-10">
+        <span className="text-white text-sm font-semibold">
+          {t("level")} {level}
+        </span>
+        <div className="flex-grow mx-2 bg-gray-600 rounded-full h-4 relative">
+          <div
+            className="bg-yellow-400 h-full rounded-full transition-all duration-300"
+            style={{ width: `${Math.min(xpPercentage, 100)}%` }}
+          ></div>
         </div>
-
-        {/* XP Display */}
-        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-lg">
-          <Star className="w-5 h-5 text-yellow-500" />
-          <span className="font-semibold text-gray-800">{xp} XP</span>
-          <Badge variant="secondary">Level {level}</Badge>
-        </div>
+        <span className="text-white text-sm">{xpPercentage.toFixed(2)}%</span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarDays className="w-5 h-5" />
-              {t("agenda.calendar")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} className="rounded-md border" />
-          </CardContent>
-        </Card>
-
-        {/* Events List */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5" />
-              {selectedDate ? `${t("agenda.eventsFor")} ${selectedDate.toLocaleDateString()}` : t("agenda.allEvents")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {selectedDate && getEventsForDate(selectedDate).length > 0 ? (
-                getEventsForDate(selectedDate).map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      {getEventIcon(event.type)}
-                      <div>
-                        <h3 className="font-semibold text-gray-800">{event.title}</h3>
-                        <p className="text-sm text-gray-600">{event.subject}</p>
-                      </div>
-                      <Badge className={getEventColor(event.type)}>{t(`agenda.${event.type}`)}</Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {event.xpReward && (
-                        <Badge variant="outline" className="text-yellow-600">
-                          +{event.xpReward} XP
-                        </Badge>
-                      )}
-                      {!event.completed ? (
-                        <Button size="sm" onClick={() => handleCompleteEvent(event.id)}>
-                          {t("agenda.complete")}
-                        </Button>
-                      ) : (
-                        <Badge className="bg-green-100 text-green-800">{t("agenda.completed")}</Badge>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <CalendarDays className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>{t("agenda.noEvents")}</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Floating Action Buttons */}
-      <div className="fixed right-6 bottom-6 flex flex-col gap-4">
-        {/* Trip Button */}
-        <button
-          onClick={() => router.push("/trip")}
-          className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
+      {/* Claim Level Up Button (Airdrop) */}
+      {canClaimLevelUp && (
+        <Button
+          onClick={claimLevelUp}
+          className="absolute top-[21%] mt-8 left-1/2 -translate-x-1/2 bg-white text-black border border-black shadow-lg animate-pulse-glow z-20"
+          disabled={isClaimingAirdrop || !isAuthenticated || !walletAddress || !airdropStatus?.canClaim}
         >
-          <Plane className="w-6 h-6 text-black" />
-        </button>
-
-        {/* Swap Icon below Plane Icon */}
-        <ArrowLeftRight className="h-6 w-6 text-gray-600 cursor-pointer" onClick={() => router.push("/wallet")} />
-
-        {/* Swap Button */}
-        {/* <button
-          onClick={() => router.push("/wallet")}
-          className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
-        >
-          <ArrowLeftRight className="w-6 h-6 text-black" />
-        </button> */}
-      </div>
-
-      {/* Level Up Modal */}
-      {showLevelUpModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="w-80 mx-4">
-            <CardContent className="text-center p-6">
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-8 h-8 text-yellow-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">{t("agenda.levelUp")}!</h2>
-              <p className="text-gray-600 mb-4">
-                {t("agenda.reachedLevel")} {level}!
-              </p>
-              <Button onClick={() => setShowLevelUpModal(false)} className="w-full">
-                {t("agenda.continue")}
-              </Button>
-            </CardContent>
-          </Card>
+          {isClaimingAirdrop ? (
+            <span className="flex items-center">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("claiming")}
+            </span>
+          ) : (
+            t("claim_level_up")
+          )}
+        </Button>
+      )}
+      {/* Mensagem de status do airdrop */}
+      {airdropStatus && !airdropStatus.canClaim && (
+        <div className="absolute top-[21%] mt-16 left-1/2 -translate-x-1/2 text-red-600 text-xs text-center z-20">
+          {airdropStatus.isBlocked
+            ? t("airdrop_blocked_message")
+            : airdropStatus.claimsToday >= airdropStatus.maxDailyClaims
+              ? t("airdrop_daily_limit_reached", { count: airdropStatus.maxDailyClaims })
+              : ""}
         </div>
       )}
+
+      {/* Agenda Board and Calendar */}
+      <div
+        className="relative z-1 flex flex-col items-center justify-center p-72 mt-[-100px]"
+        style={{
+          backgroundImage: 'url("/images/agendatable.png")',
+          backgroundSize: "contain",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          width: "100%",
+          maxWidth: "1400px",
+          aspectRatio: "1.2 / 1",
+        }}
+      >
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(newDate) => {
+            setDate(newDate)
+            handleDateSelect(newDate)
+          }}
+          className="rounded-md border shadow-lg backdrop-blur-sm bg-transparent text-xs"
+          initialFocus
+        />
+      </div>
+
+      {/* User Profile Button (now above Plane button) */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setIsProfileModalOpen(true)}
+        className="absolute bottom-80 right-4 z-20 h-10 w-10 rounded-full bg-white border border-black text-black shadow-lg hover:bg-gray-100 transition-all duration-200"
+        aria-label={t("user_profile")}
+      >
+        <User className="h-6 w-6" />
+      </Button>
+
+      {/* Plane Button to trigger teacher/speech bubble */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => {
+          setShowTripSpeech(true)
+          setShowDailyDisciplinesSpeech(false)
+          setShowWelcomeAgendaSpeech(false)
+        }}
+        className="absolute bottom-64 right-4 z-20 h-10 w-10 rounded-full bg-white border border-black text-black shadow-lg hover:bg-gray-100 transition-all duration-200"
+        aria-label={t("study_visit")}
+      >
+        <Plane className="h-6 w-6" />
+      </Button>
+
+      {/* Teacher Image and Speech Bubble - Conditionally rendered based on context */}
+      {(showTripSpeech || showDailyDisciplinesSpeech || showWelcomeAgendaSpeech) && (
+        <>
+          <TeacherImage />
+          {showWelcomeAgendaSpeech && (
+            <SpeechBubble
+              text={initialAgendaWelcomeText}
+              buttons={[{ label: t("got_it"), onClick: () => setShowWelcomeAgendaSpeech(false), variant: "default" }]}
+              onClose={() => setShowWelcomeAgendaSpeech(false)}
+              positionClasses="bottom-4 left-28 md:left-32"
+            />
+          )}
+          {!showWelcomeAgendaSpeech && showTripSpeech && (
+            <SpeechBubble
+              text={teacherTripText}
+              buttons={[
+                { label: t("travel_wld"), onClick: handlePayTrip, variant: "default" },
+                { label: t("no_dont_want_to_go"), onClick: handleDeclineTrip, variant: "destructive" },
+              ]}
+              onClose={() => setShowTripSpeech(false)}
+              positionClasses="bottom-4 left-28 md:left-32"
+            />
+          )}
+          {!showWelcomeAgendaSpeech && showDailyDisciplinesSpeech && (
+            <SpeechBubble
+              text={speechTextForSelectedDate}
+              buttons={
+                dailyDisciplinesForSelectedDate.length > 0
+                  ? dailyDisciplinesForSelectedDate.map((discipline) => ({
+                      label: discipline,
+                      onClick: () => {
+                        router.push(`/disciplines/${discipline.toLowerCase().replace(/\s/g, "-")}`)
+                        setShowDailyDisciplinesSpeech(false)
+                      },
+                      variant: "default",
+                    }))
+                  : []
+              }
+              onClose={() => setShowDailyDisciplinesSpeech(false)}
+              positionClasses="bottom-4 left-28 md:left-32"
+            />
+          )}
+        </>
+      )}
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        userName={userName}
+        level={level}
+        xpPercentage={xpPercentage}
+      />
     </div>
   )
 }
