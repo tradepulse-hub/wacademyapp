@@ -3,16 +3,6 @@ import type { ContentItem } from "./types"
 export const mathematicsContent: ContentItem[] = [
   {
     type: "lesson",
-    title: "mathematics_lesson_1_title",
-    text: "mathematics_lesson_1_text",
-  },
-  {
-    type: "exercise",
-    question: "mathematics_exercise_1_question",
-    correctAnswer: "10",
-  },
-  {
-    type: "lesson",
     title: "math_lesson_intro_algebra_title",
     text: "math_lesson_intro_algebra_text",
   },
@@ -20,6 +10,7 @@ export const mathematicsContent: ContentItem[] = [
     type: "exercise",
     question: "math_exercise_addition_question",
     correctAnswer: "math_exercise_addition_correctAnswer",
+    tip: "math_exercise_addition_tip", // Nova dica específica
   },
   {
     type: "exercise",
@@ -48,16 +39,6 @@ export const mathematicsContent: ContentItem[] = [
   },
   {
     type: "lesson",
-    title: "mathematics_lesson_2_title",
-    text: "mathematics_lesson_2_text",
-  },
-  {
-    type: "exercise",
-    question: "mathematics_exercise_2_question",
-    correctAnswer: "25",
-  },
-  {
-    type: "lesson",
     title: "math_lesson_linear_equations_title",
     text: "math_lesson_linear_equations_text",
   },
@@ -65,6 +46,7 @@ export const mathematicsContent: ContentItem[] = [
     type: "exercise",
     question: "math_exercise_solving_equations_question",
     correctAnswer: "math_exercise_solving_equations_correctAnswer",
+    tip: "math_exercise_solving_equations_tip", // Nova dica específica
   },
   {
     type: "lesson",

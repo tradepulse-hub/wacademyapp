@@ -3,28 +3,14 @@ import type { ContentItem } from "./types"
 export const scienceContent: ContentItem[] = [
   {
     type: "lesson",
-    title: "science_lesson_1_title",
-    text: "science_lesson_1_text",
-  },
-  {
-    type: "exercise",
-    question: "science_exercise_1_question",
-    correctAnswer: "h2o",
-  },
-  {
-    type: "lesson",
-    title: "science_lesson_2_title",
-    text: "science_lesson_2_text",
-  },
-  {
-    type: "exercise",
-    question: "science_exercise_2_question",
-    correctAnswer: "oxygen",
+    title: "science_lesson1_title",
+    text: "science_lesson1_text",
   },
   {
     type: "exercise",
     question: "science_exercise_planet_red_question",
     correctAnswer: "science_exercise_planet_red_correctAnswer",
+    tip: "science_exercise_planet_red_tip", // Nova dica específica
   },
   {
     type: "exercise",
@@ -120,5 +106,6 @@ export const scienceContent: ContentItem[] = [
     type: "exercise",
     question: "science_exercise_body_part_brain_question",
     correctAnswer: "science_exercise_body_part_brain_correctAnswer",
+    tip: "science_exercise_body_part_brain_tip", // Nova dica específica
   },
 ]

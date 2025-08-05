@@ -25,6 +25,7 @@ export const historyContent: ContentItem[] = [
     type: "exercise",
     question: "history_exercise_discovery_question",
     correctAnswer: "history_exercise_discovery_correctAnswer",
+    tip: "history_exercise_discovery_tip", // Nova dica específica
   },
   {
     type: "exercise",
@@ -115,6 +116,7 @@ export const historyContent: ContentItem[] = [
     type: "exercise",
     question: "history_exercise_conflict_question",
     correctAnswer: "history_exercise_conflict_correctAnswer",
+    tip: "history_exercise_conflict_tip", // Nova dica específica
   },
   {
     type: "exercise",

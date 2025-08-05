@@ -126,7 +126,11 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
   }
 
   const handleShowTip = () => {
-    setCurrentTipMessage(t("tip_message"))
+    // Prioritize question-specific tip, then fall back to generic tip
+    const tipKey = (currentItem as { tip?: string })?.tip
+    const tipToShow = tipKey ? t(tipKey) : t("tip_message")
+    setCurrentTipMessage(tipToShow)
+
     if (tipTimeoutId) clearTimeout(tipTimeoutId)
     const id = setTimeout(() => {
       setCurrentTipMessage(null)

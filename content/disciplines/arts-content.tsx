@@ -3,28 +3,14 @@ import type { ContentItem } from "./types"
 export const artsContent: ContentItem[] = [
   {
     type: "lesson",
-    title: "arts_lesson_1_title",
-    text: "arts_lesson_1_text",
-  },
-  {
-    type: "exercise",
-    question: "arts_exercise_1_question",
-    correctAnswer: "mona lisa",
-  },
-  {
-    type: "lesson",
-    title: "arts_lesson_2_title",
-    text: "arts_lesson_2_text",
-  },
-  {
-    type: "exercise",
-    question: "arts_exercise_2_question",
-    correctAnswer: "picasso",
+    title: "arts_lesson1_title",
+    text: "arts_lesson1_text",
   },
   {
     type: "exercise",
     question: "arts_exercise_painter_mona_lisa_question",
     correctAnswer: "arts_exercise_painter_mona_lisa_correctAnswer",
+    tip: "arts_exercise_painter_mona_lisa_tip", // Nova dica específica
   },
   {
     type: "exercise",
@@ -120,5 +106,6 @@ export const artsContent: ContentItem[] = [
     type: "exercise",
     question: "arts_exercise_genre_hip_hop_question",
     correctAnswer: "arts_exercise_genre_hip_hop_correctAnswer",
+    tip: "arts_exercise_genre_hip_hop_tip", // Nova dica específica
   },
 ]

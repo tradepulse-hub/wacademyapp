@@ -229,6 +229,7 @@
 
   "history_exercise_discovery_title": "Penemuan",
   "history_exercise_discovery_question": "Siapa yang menemukan Brasil?",
+  "history_exercise_discovery_correctAnswer": "Cabral",
   "history_exercise_war_title": "Perang",
   "history_exercise_war_question": "Perang Dunia (1914)?",
   "history_exercise_war_correctAnswer": "Pertama",
@@ -402,7 +403,6 @@
   "science_exercise_unit_force_title": "Satuan",
   "science_exercise_unit_force_question": "Satuan gaya?",
   "science_exercise_unit_force_correctAnswer": "Newton",
-  "science_exercise_process_plants_food_title": "Proses",
   "science_exercise_process_plants_food_question": "Tumbuhan membuat makanan menggunakan sinar matahari?",
   "science_exercise_process_plants_food_correctAnswer": "Fotosintesis",
   "science_exercise_body_part_brain_title": "Bagian Tubuh",
@@ -530,5 +530,20 @@
   "literature_exercise_theme_main_idea_title": "Tema",
   "literature_exercise_theme_main_idea_question": "Ide utama cerita?",
   "session_expired": "Sesi Anda telah berakhir. Silakan masuk lagi.",
-  "teacher_intro_message": "Di sini Anda akan belajar dan menguji pengetahuan Anda. Untuk setiap jawaban yang benar, Anda mendapatkan 1 XP! Mari kita mulai!"
+  "teacher_intro_message": "Di sini Anda akan belajar dan menguji pengetahuan Anda. Untuk setiap jawaban yang benar, Anda mendapatkan 1 XP! Mari kita mulai!",
+
+  "math_exercise_addition_tip": "Petunjuk: Hasilnya adalah bilangan genap.",
+  "math_exercise_solving_equations_tip": "Petunjuk: Nilai x adalah satu digit.",
+  "memory_exercise_capital_tip": "Petunjuk: Memiliki 5 huruf.",
+  "finance_exercise_currency_tip": "Petunjuk: Memiliki 4 huruf.",
+  "history_exercise_discovery_tip": "Petunjuk: Dimulai dengan 'C'.",
+  "history_exercise_conflict_tip": "Petunjuk: Ada 2 negara utama.",
+  "geography_exercise_capital_brazil_tip": "Petunjuk: Memiliki 8 huruf.",
+  "geography_exercise_ocean_west_africa_tip": "Petunjuk: Dimulai dengan 'A'.",
+  "science_exercise_planet_red_tip": "Petunjuk: Ini adalah planet keempat dari matahari.",
+  "science_exercise_body_part_brain_tip": "Petunjuk: Ini adalah tulang yang melindungi.",
+  "arts_exercise_painter_mona_lisa_tip": "Petunjuk: Ini adalah seniman Renaisans.",
+  "arts_exercise_genre_hip_hop_tip": "Petunjuk: Ini adalah genre musik dengan rap.",
+  "literature_exercise_author_romeo_juliet_tip": "Petunjuk: Dia adalah dramawan Inggris terkenal.",
+  "literature_exercise_theme_main_idea_tip": "Petunjuk: Ini adalah poin utama dari cerita."
 }

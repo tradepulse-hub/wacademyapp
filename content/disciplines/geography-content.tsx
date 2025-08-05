@@ -3,28 +3,14 @@ import type { ContentItem } from "./types"
 export const geographyContent: ContentItem[] = [
   {
     type: "lesson",
-    title: "geography_lesson_1_title",
-    text: "geography_lesson_1_text",
-  },
-  {
-    type: "exercise",
-    question: "geography_exercise_1_question",
-    correctAnswer: "nile",
-  },
-  {
-    type: "lesson",
-    title: "geography_lesson_2_title",
-    text: "geography_lesson_2_text",
-  },
-  {
-    type: "exercise",
-    question: "geography_exercise_2_question",
-    correctAnswer: "everest",
+    title: "geography_lesson1_title",
+    text: "geography_lesson1_text",
   },
   {
     type: "exercise",
     question: "geography_exercise_capital_brazil_question",
     correctAnswer: "geography_exercise_capital_brazil_correctAnswer",
+    tip: "geography_exercise_capital_brazil_tip", // Nova dica específica
   },
   {
     type: "exercise",
@@ -120,5 +106,6 @@ export const geographyContent: ContentItem[] = [
     type: "exercise",
     question: "geography_exercise_ocean_west_africa_question",
     correctAnswer: "geography_exercise_ocean_west_africa_correctAnswer",
+    tip: "geography_exercise_ocean_west_africa_tip", // Nova dica específica
   },
 ]

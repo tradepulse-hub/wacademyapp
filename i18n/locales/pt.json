@@ -10,5 +10,20 @@
   "teacher_intro_message": "Bem-vindo à disciplina de {disciplineName}! Aqui você aprenderá e testará seus conhecimentos. Por cada resposta certa ganhas 1 XP! Vamos começar!",
   "ok_got_it": "Ok, entendi!",
   "show_tip": "Mostrar Dica",
-  "tip_message": "Esta é uma dica útil para a pergunta atual!"
+  "tip_message": "Esta é uma dica útil para a pergunta atual!",
+
+  "math_exercise_addition_tip": "Dica: O resultado é um número par.",
+  "math_exercise_solving_equations_tip": "Dica: O valor de x é um único dígito.",
+  "memory_exercise_capital_tip": "Dica: Tem 5 letras.",
+  "finance_exercise_currency_tip": "Dica: Tem 4 letras.",
+  "history_exercise_discovery_tip": "Dica: Começa com 'C'.",
+  "history_exercise_conflict_tip": "Dica: São 2 países principais.",
+  "geography_exercise_capital_brazil_tip": "Dica: Tem 8 letras.",
+  "geography_exercise_ocean_west_africa_tip": "Dica: Começa com 'A'.",
+  "science_exercise_planet_red_tip": "Dica: É o quarto planeta do sol.",
+  "science_exercise_body_part_brain_tip": "Dica: É um osso que protege.",
+  "arts_exercise_painter_mona_lisa_tip": "Dica: É um artista renascentista.",
+  "arts_exercise_genre_hip_hop_tip": "Dica: É um gênero musical com rap.",
+  "literature_exercise_author_romeo_juliet_tip": "Dica: É um famoso dramaturgo inglês.",
+  "literature_exercise_theme_main_idea_tip": "Dica: É o ponto principal da história."
 }

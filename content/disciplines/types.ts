@@ -1,8 +1,12 @@
-// Define o tipo para o conteúdo da disciplina
-export type ContentItem = {
-  type: "lesson" | "exercise"
-  title: string
-  text?: string // Para aulas
-  question?: string // Para exercícios
-  correctAnswer?: string // Para exercícios
-}
+export type ContentItem =
+  | {
+      type: "lesson"
+      title: string
+      text: string
+    }
+  | {
+      type: "exercise"
+      question: string
+      correctAnswer: string
+      tip?: string // Adicionando a propriedade de dica opcional
+    }

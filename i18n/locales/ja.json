@@ -197,5 +197,19 @@
   "literature_exercise3_answer": "ウィリアム・シェイクスピア",
   "literature_exercise3_tip": "彼は有名なイギリスの劇作家です。",
   "session_expired": "セッションの有効期限が切れました。再度ログインしてください。",
-  "teacher_intro_message": "ここでは知識を学び、試すことができます。正解ごとに1XPを獲得できます！始めましょう！"
+  "teacher_intro_message": "ここでは知識を学び、試すことができます。正解ごとに1XPを獲得できます！始めましょう！",
+  "math_exercise_addition_tip": "ヒント: 結果は偶数です。",
+  "math_exercise_solving_equations_tip": "ヒント: x の値は1桁です。",
+  "memory_exercise_capital_tip": "ヒント: 5文字です。",
+  "finance_exercise_currency_tip": "ヒント: 4文字です。",
+  "history_exercise_discovery_tip": "ヒント: 'C'で始まります。",
+  "history_exercise_conflict_tip": "ヒント: 主な国は2つです。",
+  "geography_exercise_capital_brazil_tip": "ヒント: 8文字です。",
+  "geography_exercise_ocean_west_africa_tip": "ヒント: 'A'で始まります。",
+  "science_exercise_planet_red_tip": "ヒント: 太陽から4番目の惑星です。",
+  "science_exercise_body_part_brain_tip": "ヒント: 保護する骨です。",
+  "arts_exercise_painter_mona_lisa_tip": "ヒント: ルネサンス期の芸術家です。",
+  "arts_exercise_genre_hip_hop_tip": "ヒント: ラップのある音楽ジャンルです。",
+  "literature_exercise_author_romeo_juliet_tip": "ヒント: 有名なイギリスの劇作家です。",
+  "literature_exercise_theme_main_idea_tip": "ヒント: 物語の主要な点です。"
 }
