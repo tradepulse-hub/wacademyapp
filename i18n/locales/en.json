@@ -43,8 +43,6 @@
   "user_name_missing_for_wallet_connect": "Username missing. Please enter your name first.",
   "airdrop_blocked_message": "Your address is blocked from claiming airdrops.",
   "airdrop_daily_limit_reached": "You have reached the daily limit of {{count}} claims.",
-  "tip_message": "This is a helpful tip for the current question!",
-  "show_tip": "Show Tip",
   "ok_got_it": "Ok, got it!",
 
   "math_lesson_intro_algebra_title": "Introduction to Algebra",
@@ -105,6 +103,8 @@
   "math_exercise_order_operations_question": "2 + 3 * 4?",
   "math_exercise_order_operations_correctAnswer": "14",
 
+  "memory_lesson1_title": "Introduction to Memory",
+  "memory_lesson1_text": "Memory is the ability to store and retrieve information. It is essential for learning and our daily experiences.",
   "memory_exercise_capital_title": "Capital",
   "memory_exercise_capital_question": "Capital of France?",
   "memory_exercise_memory_exercise_capital_question": "Capital of France?",
@@ -530,20 +530,5 @@
   "literature_exercise_theme_main_idea_title": "Theme",
   "literature_exercise_theme_main_idea_question": "Main idea of a story?",
   "session_expired": "Your session has expired. Please log in again.",
-  "teacher_intro_message": "Here you will learn and test your knowledge. For each correct answer, you earn 1 XP! Let's begin!",
-
-  "math_exercise_addition_tip": "Tip: The result is an even number.",
-  "math_exercise_solving_equations_tip": "Tip: The value of x is a single digit.",
-  "memory_exercise_capital_tip": "Tip: It has 5 letters.",
-  "finance_exercise_currency_tip": "Tip: It has 4 letters.",
-  "history_exercise_discovery_tip": "Tip: Starts with 'C'.",
-  "history_exercise_conflict_tip": "Tip: There are 2 main countries.",
-  "geography_exercise_capital_brazil_tip": "Tip: It has 8 letters.",
-  "geography_exercise_ocean_west_africa_tip": "Tip: Starts with 'A'.",
-  "science_exercise_planet_red_tip": "Tip: It's the fourth planet from the sun.",
-  "science_exercise_body_part_brain_tip": "Tip: It's a bone that protects.",
-  "arts_exercise_painter_mona_lisa_tip": "Tip: It's a Renaissance artist.",
-  "arts_exercise_genre_hip_hop_tip": "Tip: It's a music genre with rapping.",
-  "literature_exercise_author_romeo_juliet_tip": "Tip: He is a famous English playwright.",
-  "literature_exercise_theme_main_idea_tip": "Tip: It's the main point of the story."
+  "teacher_intro_message": "Here you will learn and test your knowledge. For each correct answer, you earn 1 XP! Let's begin!"
 }

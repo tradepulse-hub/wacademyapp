@@ -44,8 +44,6 @@
   "airdrop_blocked_message": "Tu dirección está bloqueada para reclamar airdrops.",
   "airdrop_daily_limit_reached": "Has alcanzado el límite diario de {{count}} reclamaciones.",
   "teacher_intro_message": "Aquí aprenderás y pondrás a prueba tus conocimientos. ¡Por cada respuesta correcta ganas 1 XP! ¡Empecemos!",
-  "tip_message": "¡Este es un consejo útil para la pregunta actual!",
-  "show_tip": "Mostrar consejo",
   "ok_got_it": "¡De acuerdo, lo tengo!",
 
   "math_lesson_intro_algebra_title": "Introducción al álgebra",
@@ -445,7 +443,7 @@
   "arts_exercise_composer_classical_question": "¿Compositor clásico famoso?",
   "arts_exercise_composer_classical_correctAnswer": "Beethoven",
   "arts_exercise_art_movement_distorted_title": "Movimento Artístico",
-  "arts_exercise_art_movement_distorted_question": "¿Movimento com figuras distorcionadas?",
+  "arts_exercise_art_movement_distorted_question": "¿Movimento con figuras distorcionadas?",
   "arts_exercise_art_movement_distorted_correctAnswer": "Cubismo",
   "arts_exercise_instrument_brass_title": "Instrumento",
   "arts_exercise_instrument_brass_question": "¿Instrumento de viento-metal con válvulas?",
@@ -531,20 +529,5 @@
   "literature_exercise_setting_story_place_correctAnswer": "Escenario",
   "literature_exercise_theme_main_idea_title": "Tema",
   "literature_exercise_theme_main_idea_question": "¿Idea principal de una historia?",
-  "literature_exercise_theme_main_idea_correctAnswer": "Tema",
-
-  "math_exercise_addition_tip": "Pista: El resultado es un número par.",
-  "math_exercise_solving_equations_tip": "Pista: El valor de x es un solo dígito.",
-  "memory_exercise_capital_tip": "Pista: Tiene 5 letras.",
-  "finance_exercise_currency_tip": "Pista: Tiene 4 letras.",
-  "history_exercise_discovery_tip": "Pista: Comienza con 'C'.",
-  "history_exercise_conflict_tip": "Pista: Son 2 países principales.",
-  "geography_exercise_capital_brazil_tip": "Pista: Tiene 8 letras.",
-  "geography_exercise_ocean_west_africa_tip": "Pista: Comienza con 'A'.",
-  "science_exercise_planet_red_tip": "Pista: Es el cuarto planeta desde el sol.",
-  "science_exercise_body_part_brain_tip": "Pista: Es un hueso que protege.",
-  "arts_exercise_painter_mona_lisa_tip": "Pista: Es un artista renacentista.",
-  "arts_exercise_genre_hip_hop_tip": "Pista: Es un género musical con rap.",
-  "literature_exercise_author_romeo_juliet_tip": "Pista: Es un famoso dramaturgo inglés.",
-  "literature_exercise_theme_main_idea_tip": "Pista: Es la idea principal de la historia."
+  "literature_exercise_theme_main_idea_correctAnswer": "Tema"
 }

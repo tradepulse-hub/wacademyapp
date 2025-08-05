@@ -11,7 +11,7 @@ import BackButton from "@/components/back-button"
 import { useI18n } from "@/i18n/use-i18n"
 import TeacherImage from "@/components/teacher-image"
 import SpeechBubble from "@/components/speech-bubble"
-import { Lightbulb } from "lucide-react"
+// Removed Lightbulb import
 
 // Importar o conteúdo de cada disciplina
 import { mathematicsContent } from "@/content/disciplines/mathematics-content"
@@ -66,9 +66,8 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
   const [showTeacherBubble, setShowTeacherBubble] = useState(true)
   const [teacherMessage, setTeacherMessage] = useState("")
 
-  // State for tip message
-  const [currentTipMessage, setCurrentTipMessage] = useState<string | null>(null)
-  const [tipTimeoutId, setTipTimeoutId] = useState<NodeJS.Timeout | null>(null)
+  // Removed state for tip message
+  // Removed state for tip timeout ID
 
   useEffect(() => {
     // Shuffle content when the component mounts or discipline changes
@@ -114,8 +113,8 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
       setFeedbackMessage("")
       setIsAnswerCorrect(false)
       setHasAnswered(false)
-      setCurrentTipMessage(null) // Clear tip message on next question
-      if (tipTimeoutId) clearTimeout(tipTimeoutId)
+      // Removed clearing tip message on next question
+      // Removed clearing tip timeout ID
     } else {
       setFeedbackMessage(t("discipline_completed"))
     }
@@ -125,18 +124,7 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
     setShowTeacherBubble(false)
   }
 
-  const handleShowTip = () => {
-    // Prioritize question-specific tip, then fall back to generic tip
-    const tipKey = (currentItem as { tip?: string })?.tip
-    const tipToShow = tipKey ? t(tipKey) : t("tip_message")
-    setCurrentTipMessage(tipToShow)
-
-    if (tipTimeoutId) clearTimeout(tipTimeoutId)
-    const id = setTimeout(() => {
-      setCurrentTipMessage(null)
-    }, 3000) // Show for 3 seconds
-    setTipTimeoutId(id)
-  }
+  // Removed handleShowTip function
 
   if (!currentItem) {
     return (
@@ -203,15 +191,9 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
             <div className="flex flex-col items-center gap-2 w-full max-w-md">
               <p className="text-[0.65rem] text-center flex items-center justify-center gap-1">
                 {translatedQuestion}
-                <Lightbulb
-                  className="w-4 h-4 text-yellow-300 cursor-pointer"
-                  onClick={handleShowTip}
-                  aria-label={t("show_tip")}
-                />
+                {/* Removed Lightbulb icon */}
               </p>
-              {currentTipMessage && (
-                <span className="text-[0.6rem] text-yellow-200 animate-fade-in-out">{currentTipMessage}</span>
-              )}
+              {/* Removed currentTipMessage display */}
               <Input
                 type="text"
                 value={userAnswer}
