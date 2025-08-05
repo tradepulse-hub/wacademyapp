@@ -1,26 +1,4 @@
-import type { ContentItem } from "./types"
-
-export const geographyContent: ContentItem[] = [
-  {
-    type: "lesson",
-    title: "geography_lesson_1_title",
-    text: "geography_lesson_1_text",
-  },
-  {
-    type: "exercise",
-    question: "geography_exercise_1_question",
-    correctAnswer: "nile",
-  },
-  {
-    type: "lesson",
-    title: "geography_lesson_2_title",
-    text: "geography_lesson_2_text",
-  },
-  {
-    type: "exercise",
-    question: "geography_exercise_2_question",
-    correctAnswer: "everest",
-  },
+export const geographyContent = [
   {
     type: "exercise",
     question: "geography_exercise_capital_brazil_question",

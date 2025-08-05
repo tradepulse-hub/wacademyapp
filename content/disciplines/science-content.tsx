@@ -1,26 +1,4 @@
-import type { ContentItem } from "./types"
-
-export const scienceContent: ContentItem[] = [
-  {
-    type: "lesson",
-    title: "science_lesson_1_title",
-    text: "science_lesson_1_text",
-  },
-  {
-    type: "exercise",
-    question: "science_exercise_1_question",
-    correctAnswer: "h2o",
-  },
-  {
-    type: "lesson",
-    title: "science_lesson_2_title",
-    text: "science_lesson_2_text",
-  },
-  {
-    type: "exercise",
-    question: "science_exercise_2_question",
-    correctAnswer: "oxygen",
-  },
+export const scienceContent = [
   {
     type: "exercise",
     question: "science_exercise_planet_red_question",

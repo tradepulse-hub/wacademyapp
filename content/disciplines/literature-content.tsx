@@ -1,26 +1,4 @@
-import type { ContentItem } from "./types"
-
-export const literatureContent: ContentItem[] = [
-  {
-    type: "lesson",
-    title: "literature_lesson_1_title",
-    text: "literature_lesson_1_text",
-  },
-  {
-    type: "exercise",
-    question: "literature_exercise_1_question",
-    correctAnswer: "shakespeare",
-  },
-  {
-    type: "lesson",
-    title: "literature_lesson_2_title",
-    text: "literature_lesson_2_text",
-  },
-  {
-    type: "exercise",
-    question: "literature_exercise_2_question",
-    correctAnswer: "odyssey",
-  },
+export const literatureContent = [
   {
     type: "exercise",
     question: "literature_exercise_author_romeo_juliet_question",

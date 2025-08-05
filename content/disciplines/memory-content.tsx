@@ -1,26 +1,4 @@
-import type { ContentItem } from "./types"
-
-export const memoryContent: ContentItem[] = [
-  {
-    type: "lesson",
-    title: "memory_lesson_1_title",
-    text: "memory_lesson_1_text",
-  },
-  {
-    type: "exercise",
-    question: "memory_exercise_1_question",
-    correctAnswer: "elephant",
-  },
-  {
-    type: "lesson",
-    title: "memory_lesson_2_title",
-    text: "memory_lesson_2_text",
-  },
-  {
-    type: "exercise",
-    question: "memory_exercise_2_question",
-    correctAnswer: "apple",
-  },
+export const memoryContent = [
   {
     type: "exercise",
     question: "memory_exercise_capital_question",
