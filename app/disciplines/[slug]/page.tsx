@@ -82,7 +82,7 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
     setHasAnswered(false)
 
     // Set initial teacher message
-    setTeacherMessage(t("teacher_intro_message", { disciplineName: disciplineName }))
+    setTeacherMessage(t("teacher_intro_message", { disciplineName: disciplineName })) // Usando uma chave de tradução mais genérica
     setShowTeacherBubble(true) // Ensure bubble is shown on discipline start
   }, [disciplineSlug, originalContent, t, disciplineName])
 
