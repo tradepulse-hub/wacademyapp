@@ -43,7 +43,7 @@
   "user_name_missing_for_wallet_connect": "ユーザー名がありません。まず名前を入力してください。",
   "airdrop_blocked_message": "あなたのアドレスはエアドロップの請求がブロックされています。",
   "airdrop_daily_limit_reached": "1日の請求上限（{{count}}回）に達しました。",
-  "tip_message": "現在の質問に役立つヒントです。基本的な操作を考慮してください。",
+  "tip_message": "現在の質問に役立つヒントです！",
   "show_tip": "ヒントを表示",
   "ok_got_it": "はい、わかりました！",
   "candy_crush_title": "キャンディークラッシュゲーム",
