@@ -10,6 +10,5 @@
   "teacher_intro_message": "Bem-vindo à disciplina de {disciplineName}! Aqui você aprenderá e testará seus conhecimentos. Por cada resposta certa ganhas 1 XP! Vamos começar!",
   "ok_got_it": "Ok, entendi!",
   "show_tip": "Mostrar Dica",
-  "tip_message": "Esta é uma dica útil para a pergunta atual!",
-  "math_exercise_addition_tip": "Pense em contar objetos juntos."
+  "tip_message": "Esta é uma dica útil para a pergunta atual!"
 }
