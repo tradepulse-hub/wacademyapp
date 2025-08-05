@@ -35,7 +35,7 @@
   "check_answer": "答えを確認",
   "next": "次へ",
   "complete_discipline": "分野を完了",
-  "teacher_intro_message": "{disciplineName}分野へようこそ！ここでは知識を学び、試すことができます。正解するごとに1XP獲得！始めましょう！",
+  "teacher_intro_message": "ワールドアカデミーへようこそ！ここでは知識を学び、試すことができます。正解するごとに1XP獲得！始めましょう！",
   "tip_message": "現在の質問に役立つヒントです！",
   "show_tip": "ヒントを表示",
   "ok_got_it": "はい、わかりました！",
@@ -105,6 +105,7 @@
   "math_exercise_order_operations_title": "演算の順序",
   "math_exercise_order_operations_question": "2 + 3 * 4?",
   "math_exercise_order_operations_correctAnswer": "14",
+  "math_exercise_addition_tip": "物を一緒に数えることを考えてみましょう。",
 
   "memory_exercise_capital_title": "首都",
   "memory_exercise_capital_question": "フランスの首都は？",

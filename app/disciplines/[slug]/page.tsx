@@ -92,6 +92,7 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
   const translatedText = currentItem && currentItem.text ? t(currentItem.text) : undefined
   const translatedQuestion = currentItem && currentItem.question ? t(currentItem.question) : undefined
   const translatedCorrectAnswer = currentItem && currentItem.correctAnswer ? t(currentItem.correctAnswer) : undefined
+  const translatedTip = currentItem && currentItem.tip ? t(currentItem.tip) : t("tip_message")
 
   const handleCheckAnswer = () => {
     if (!currentItem || currentItem.type !== "exercise") return
@@ -126,7 +127,7 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
   }
 
   const handleShowTip = () => {
-    setCurrentTipMessage(t("tip_message"))
+    setCurrentTipMessage(translatedTip) // Usa a dica traduzida
     if (tipTimeoutId) clearTimeout(tipTimeoutId)
     const id = setTimeout(() => {
       setCurrentTipMessage(null)

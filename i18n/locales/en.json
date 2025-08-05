@@ -53,6 +53,7 @@
   "math_exercise_addition_title": "Addition",
   "math_exercise_addition_question": "2 + 2?",
   "math_exercise_addition_correctAnswer": "4",
+  "math_exercise_addition_tip": "Think about counting objects together.",
   "math_exercise_subtraction_title": "Subtraction",
   "math_exercise_subtraction_question": "5 - 3?",
   "math_exercise_subtraction_correctAnswer": "2",

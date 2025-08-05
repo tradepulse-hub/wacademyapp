@@ -20,6 +20,7 @@ export const mathematicsContent: ContentItem[] = [
     type: "exercise",
     question: "math_exercise_addition_question",
     correctAnswer: "math_exercise_addition_correctAnswer",
+    tip: "math_exercise_addition_tip", // Adicionada a chave da dica
   },
   {
     type: "exercise",
