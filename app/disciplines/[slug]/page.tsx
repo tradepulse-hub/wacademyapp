@@ -172,7 +172,7 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
         <SpeechBubble
           text={teacherMessage}
           onClose={handleCloseTeacherBubble}
-          positionClasses="fixed bottom-[50px] left-[100px] md:bottom-[50px] md:left-[100px] lg:bottom-[50px] lg:left-[100px]" // Adjusted position to be right of teacher
+          positionClasses="fixed bottom-[10px] left-[100px] md:bottom-[10px] md:left-[100px] lg:bottom-[10px] lg:left-[100px]" // Adjusted position to be right of teacher and lower
           buttons={[{ label: t("ok_got_it"), onClick: handleCloseTeacherBubble }]}
         />
       )}
