@@ -163,14 +163,16 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
       <BackButton href="/agenda" />
 
       {/* Teacher Image and Speech Bubble */}
-      <div className="fixed bottom-0 right-0 z-40">
+      <div className="fixed bottom-0 left-0 z-40">
+        {" "}
+        {/* Changed from right-0 to left-0 */}
         <TeacherImage />
       </div>
       {showTeacherBubble && (
         <SpeechBubble
           text={teacherMessage}
           onClose={handleCloseTeacherBubble}
-          positionClasses="fixed bottom-[50px] right-[20px] md:bottom-[50px] md:right-[20px] lg:bottom-[50px] lg:right-[20px]" // Adjusted position
+          positionClasses="fixed bottom-[50px] left-[100px] md:bottom-[50px] md:left-[100px] lg:bottom-[50px] lg:left-[100px]" // Adjusted position to be right of teacher
           buttons={[{ label: t("ok_got_it"), onClick: handleCloseTeacherBubble }]}
         />
       )}
