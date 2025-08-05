@@ -9,9 +9,9 @@ import { useXP } from "@/hooks/use-xp"
 import { cn } from "@/lib/utils"
 import BackButton from "@/components/back-button"
 import { useI18n } from "@/i18n/use-i18n"
-import TeacherImage from "@/components/teacher-image" // Import TeacherImage
-import SpeechBubble from "@/components/speech-bubble" // Import SpeechBubble
-import { Lightbulb } from "lucide-react" // Import Lightbulb icon
+import TeacherImage from "@/components/teacher-image"
+import SpeechBubble from "@/components/speech-bubble"
+import { Lightbulb } from "lucide-react"
 
 // Importar o conteúdo de cada disciplina
 import { mathematicsContent } from "@/content/disciplines/mathematics-content"
@@ -81,7 +81,7 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
     setIsAnswerCorrect(false)
     setHasAnswered(false)
 
-    // Set initial teacher message, passing disciplineName for interpolation
+    // Set initial teacher message
     setTeacherMessage(t("teacher_intro_message", { disciplineName: disciplineName }))
     setShowTeacherBubble(true) // Ensure bubble is shown on discipline start
   }, [disciplineSlug, originalContent, t, disciplineName])
@@ -162,20 +162,18 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
     >
       <BackButton href="/agenda" />
 
-      {/* Teacher Image and Speech Bubble Container */}
-      <div className="fixed bottom-0 right-0 z-50">
-        {" "}
-        {/* Ensure teacher is on top */}
+      {/* Teacher Image and Speech Bubble */}
+      <div className="fixed bottom-0 right-0 z-40">
         <TeacherImage />
-        {showTeacherBubble && (
-          <SpeechBubble
-            text={teacherMessage}
-            onClose={handleCloseTeacherBubble}
-            positionClasses="absolute bottom-[150px] right-[220px]" // Adjusted position relative to its parent container
-            buttons={[{ label: t("ok_got_it"), onClick: handleCloseTeacherBubble }]}
-          />
-        )}
       </div>
+      {showTeacherBubble && (
+        <SpeechBubble
+          text={teacherMessage}
+          onClose={handleCloseTeacherBubble}
+          positionClasses="fixed bottom-[50px] right-[20px] md:bottom-[50px] md:right-[20px] lg:bottom-[50px] lg:right-[20px]" // Adjusted position
+          buttons={[{ label: t("ok_got_it"), onClick: handleCloseTeacherBubble }]}
+        />
+      )}
 
       <div
         className={cn(

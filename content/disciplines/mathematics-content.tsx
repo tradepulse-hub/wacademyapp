@@ -1,4 +1,16 @@
-export const mathematicsContent = [
+import type { ContentItem } from "./types"
+
+export const mathematicsContent: ContentItem[] = [
+  {
+    type: "lesson",
+    title: "mathematics_lesson_1_title",
+    text: "mathematics_lesson_1_text",
+  },
+  {
+    type: "exercise",
+    question: "mathematics_exercise_1_question",
+    correctAnswer: "10",
+  },
   {
     type: "lesson",
     title: "math_lesson_intro_algebra_title",
@@ -33,6 +45,16 @@ export const mathematicsContent = [
     type: "exercise",
     question: "math_exercise_sequence_question",
     correctAnswer: "math_exercise_sequence_correctAnswer",
+  },
+  {
+    type: "lesson",
+    title: "mathematics_lesson_2_title",
+    text: "mathematics_lesson_2_text",
+  },
+  {
+    type: "exercise",
+    question: "mathematics_exercise_2_question",
+    correctAnswer: "25",
   },
   {
     type: "lesson",

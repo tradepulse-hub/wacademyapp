@@ -1,4 +1,11 @@
-export const financeContent = [
+import type { ContentItem } from "./types"
+
+export const financeContent: ContentItem[] = [
+  {
+    type: "lesson",
+    title: "finance_lesson_1_title",
+    text: "finance_lesson_1_text",
+  },
   {
     type: "exercise",
     question: "finance_exercise_currency_question",
@@ -78,6 +85,21 @@ export const financeContent = [
     type: "exercise",
     question: "finance_exercise_bond_question",
     correctAnswer: "finance_exercise_bond_correctAnswer",
+  },
+  {
+    type: "lesson",
+    title: "finance_lesson_2_title",
+    text: "finance_lesson_2_text",
+  },
+  {
+    type: "exercise",
+    question: "finance_exercise_1_question",
+    correctAnswer: "inflation",
+  },
+  {
+    type: "exercise",
+    question: "finance_exercise_2_question",
+    correctAnswer: "interest",
   },
   {
     type: "exercise",
