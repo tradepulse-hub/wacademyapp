@@ -33,9 +33,16 @@
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-secondary: oklch(0.97 0 0);
+  --sidebar-secondary-foreground: oklch(0.205 0 0);
+  --sidebar-muted: oklch(0.97 0 0);
+  --sidebar-muted-foreground: oklch(0.556 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-destructive: oklch(0.577 0.245 27.325);
+  --sidebar-destructive-foreground: oklch(0.577 0.245 27.325);
   --sidebar-border: oklch(0.922 0 0);
+  --sidebar-input: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 }
 
@@ -68,9 +75,16 @@
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-secondary: oklch(0.269 0 0);
+  --sidebar-secondary-foreground: oklch(0.985 0 0);
+  --sidebar-muted: oklch(0.269 0 0);
+  --sidebar-muted-foreground: oklch(0.708 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-destructive: oklch(0.396 0.141 25.723);
+  --sidebar-destructive-foreground: oklch(0.637 0.237 25.331);
   --sidebar-border: oklch(0.269 0 0);
+  --sidebar-input: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
 }
 
@@ -109,9 +123,16 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-secondary: var(--sidebar-secondary);
+  --color-sidebar-secondary-foreground: var(--sidebar-secondary-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-destructive: var(--sidebar-destructive);
+  --color-sidebar-destructive-foreground: var(--sidebar-destructive-foreground);
   --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-input: var(--sidebar-input);
   --color-sidebar-ring: var(--sidebar-ring);
 }
 

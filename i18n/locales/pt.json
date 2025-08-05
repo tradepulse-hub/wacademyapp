@@ -2,13 +2,13 @@
   "correct_answer_xp": "Correto! +1% XP",
   "incorrect_answer_try_again": "Incorreto. Tente novamente!",
   "discipline_completed": "Disciplina concluída!",
-  "no_content_found": "Nenhum conteúdo encontrado para esta disciplina.",
   "your_answer": "Sua resposta",
   "check_answer": "Verificar Resposta",
   "next": "Próximo",
   "complete_discipline": "Concluir Disciplina",
-  "teacher_intro_message": "Olá! Bem-vindo à disciplina de {disciplineName}. Aqui você vai aprender e testar seus conhecimentos. Para cada resposta certa, você ganha 1 XP! Vamos começar!",
-  "tip_message": "Esta é uma dica! Pense cuidadosamente antes de responder.",
-  "show_tip": "Mostrar dica",
-  "ok_got_it": "Ok, entendi!"
+  "no_content_found": "Nenhum conteúdo encontrado para esta disciplina.",
+  "teacher_intro_message": "Bem-vindo à disciplina de {disciplineName}! Aqui você aprenderá e testará seus conhecimentos. Por cada resposta certa ganhas 1 XP! Vamos começar!",
+  "ok_got_it": "Ok, entendi!",
+  "show_tip": "Mostrar Dica",
+  "tip_message": "Esta é uma dica útil para a pergunta atual!"
 }

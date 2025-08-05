@@ -2,6 +2,26 @@ import type { ContentItem } from "./types"
 
 export const historyContent: ContentItem[] = [
   {
+    type: "lesson",
+    title: "history_lesson_1_title",
+    text: "history_lesson_1_text",
+  },
+  {
+    type: "exercise",
+    question: "history_exercise_1_question",
+    correctAnswer: "1492",
+  },
+  {
+    type: "lesson",
+    title: "history_lesson_2_title",
+    text: "history_lesson_2_text",
+  },
+  {
+    type: "exercise",
+    question: "history_exercise_2_question",
+    correctAnswer: "rome",
+  },
+  {
     type: "exercise",
     question: "history_exercise_discovery_question",
     correctAnswer: "history_exercise_discovery_correctAnswer",

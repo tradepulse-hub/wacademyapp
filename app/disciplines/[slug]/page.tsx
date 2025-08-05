@@ -9,9 +9,9 @@ import { useXP } from "@/hooks/use-xp"
 import { cn } from "@/lib/utils"
 import BackButton from "@/components/back-button"
 import { useI18n } from "@/i18n/use-i18n"
-import TeacherImage from "@/components/teacher-image" // Import TeacherImage
-import SpeechBubble from "@/components/speech-bubble" // Import SpeechBubble
-import { Lightbulb } from "lucide-react" // Import Lightbulb icon
+import TeacherImage from "@/components/teacher-image"
+import SpeechBubble from "@/components/speech-bubble"
+import { Lightbulb } from "lucide-react"
 
 // Importar o conteúdo de cada disciplina
 import { mathematicsContent } from "@/content/disciplines/mathematics-content"
@@ -170,7 +170,7 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
         <SpeechBubble
           text={teacherMessage}
           onClose={handleCloseTeacherBubble}
-          positionClasses="fixed bottom-1/4 right-[200px] md:right-[250px] lg:right-[300px]" // Adjusted position
+          positionClasses="fixed bottom-[50px] right-[20px] md:bottom-[50px] md:right-[20px] lg:bottom-[50px] lg:right-[20px]" // Adjusted position
           buttons={[{ label: t("ok_got_it"), onClick: handleCloseTeacherBubble }]}
         />
       )}
