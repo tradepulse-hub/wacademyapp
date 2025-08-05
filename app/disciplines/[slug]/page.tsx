@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useXP, XP_PER_LEVEL } from "@/hooks/use-xp"
+import { useXP } from "@/hooks/use-xp"
 import { cn } from "@/lib/utils"
 import BackButton from "@/components/back-button"
-import { useI18n } from "@/i18n/use-i18n" // Import useI18n
+import { useI18n } from "@/i18n/use-i18n"
+import TeacherImage from "@/components/teacher-image" // Import TeacherImage
+import SpeechBubble from "@/components/speech-bubble" // Import SpeechBubble
+import { Lightbulb } from "lucide-react" // Import Lightbulb icon
 
 // Importar o conteúdo de cada disciplina
 import { mathematicsContent } from "@/content/disciplines/mathematics-content"
@@ -48,7 +51,7 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
   const disciplineSlug = params.slug
   const disciplineName = decodeURIComponent(disciplineSlug).replace(/-/g, " ")
   const originalContent = disciplineContent[disciplineSlug] || []
-  const { t } = useI18n() // Use the i18n hook
+  const { t } = useI18n()
 
   const { addXP } = useXP()
 
@@ -59,23 +62,33 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
   const [isAnswerCorrect, setIsAnswerCorrect] = useState(false)
   const [hasAnswered, setHasAnswered] = useState(false)
 
+  // State for teacher speech bubble
+  const [showTeacherBubble, setShowTeacherBubble] = useState(true)
+  const [teacherMessage, setTeacherMessage] = useState("")
+
+  // State for tip message
+  const [currentTipMessage, setCurrentTipMessage] = useState<string | null>(null)
+  const [tipTimeoutId, setTipTimeoutId] = useState<NodeJS.Timeout | null>(null)
+
   useEffect(() => {
     // Shuffle content when the component mounts or discipline changes
     const exercises = originalContent.filter((item) => item.type === "exercise")
     const lessons = originalContent.filter((item) => item.type === "lesson")
-    // Shuffle exercises and then combine with lessons (or shuffle all if preferred)
-    setShuffledContent(shuffleArray(exercises).concat(lessons)) // Prioritize exercises first
-    setCurrentContentIndex(0) // Reset index for new content
+    setShuffledContent(shuffleArray(exercises).concat(lessons))
+    setCurrentContentIndex(0)
     setUserAnswer("")
     setFeedbackMessage("")
     setIsAnswerCorrect(false)
     setHasAnswered(false)
-  }, [disciplineSlug, originalContent]) // Re-shuffle if discipline changes
+
+    // Set initial teacher message
+    setTeacherMessage(t("teacher_intro_message", { disciplineName: disciplineName }))
+    setShowTeacherBubble(true) // Ensure bubble is shown on discipline start
+  }, [disciplineSlug, originalContent, t, disciplineName])
 
   const currentItem = shuffledContent[currentContentIndex]
 
-  // Traduzir o conteúdo do item atual
-  const translatedTitle = currentItem ? t(currentItem.title) : ""
+  const translatedTitle = currentItem && currentItem.title ? t(currentItem.title) : ""
   const translatedText = currentItem && currentItem.text ? t(currentItem.text) : undefined
   const translatedQuestion = currentItem && currentItem.question ? t(currentItem.question) : undefined
   const translatedCorrectAnswer = currentItem && currentItem.correctAnswer ? t(currentItem.correctAnswer) : undefined
@@ -84,11 +97,10 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
     if (!currentItem || currentItem.type !== "exercise") return
 
     setHasAnswered(true)
-    // Comparar a resposta do usuário com a resposta correta TRADUZIDA
     if (userAnswer.toLowerCase() === translatedCorrectAnswer?.toLowerCase()) {
       setFeedbackMessage(t("correct_answer_xp"))
       setIsAnswerCorrect(true)
-      addXP(XP_PER_LEVEL)
+      addXP(1) // Each correct answer gives 1 XP
     } else {
       setFeedbackMessage(t("incorrect_answer_try_again"))
       setIsAnswerCorrect(false)
@@ -102,10 +114,24 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
       setFeedbackMessage("")
       setIsAnswerCorrect(false)
       setHasAnswered(false)
+      setCurrentTipMessage(null) // Clear tip message on next question
+      if (tipTimeoutId) clearTimeout(tipTimeoutId)
     } else {
       setFeedbackMessage(t("discipline_completed"))
-      // Optionally navigate back or to a completion screen
     }
+  }
+
+  const handleCloseTeacherBubble = () => {
+    setShowTeacherBubble(false)
+  }
+
+  const handleShowTip = () => {
+    setCurrentTipMessage(t("tip_message"))
+    if (tipTimeoutId) clearTimeout(tipTimeoutId)
+    const id = setTimeout(() => {
+      setCurrentTipMessage(null)
+    }, 3000) // Show for 3 seconds
+    setTipTimeoutId(id)
   }
 
   if (!currentItem) {
@@ -127,7 +153,7 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
 
   return (
     <div
-      className="flex h-screen overflow-hidden flex-col items-center justify-center p-0"
+      className="relative flex h-screen overflow-hidden flex-col items-center justify-center p-0"
       style={{
         backgroundImage: 'url("/images/school-background.png")',
         backgroundSize: "cover",
@@ -135,6 +161,20 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
       }}
     >
       <BackButton href="/agenda" />
+
+      {/* Teacher Image and Speech Bubble */}
+      <div className="fixed bottom-0 right-0 z-40">
+        <TeacherImage />
+      </div>
+      {showTeacherBubble && (
+        <SpeechBubble
+          text={teacherMessage}
+          onClose={handleCloseTeacherBubble}
+          positionClasses="fixed bottom-1/4 right-[200px] md:right-[250px] lg:right-[300px]" // Adjusted position
+          buttons={[{ label: t("ok_got_it"), onClick: handleCloseTeacherBubble }]}
+        />
+      )}
+
       <div
         className={cn(
           "relative w-full aspect-[1.6/1] flex flex-col items-center justify-center p-0",
@@ -149,17 +189,29 @@ export default function DisciplinePage({ params }: { params: { slug: string } })
           className="drop-shadow-lg"
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center p-24 text-white font-mono">
-          <h2 className="text-sm font-semibold mb-2 text-center">{translatedTitle}</h2>
+          {currentItem.type === "lesson" && (
+            <h2 className="text-sm font-semibold mb-2 text-center">{translatedTitle}</h2>
+          )}
           {currentItem.type === "lesson" && <p className="text-[0.65rem] text-center max-w-4xl">{translatedText}</p>}
           {currentItem.type === "exercise" && (
             <div className="flex flex-col items-center gap-2 w-full max-w-md">
-              <p className="text-[0.65rem] text-center">{translatedQuestion}</p>
+              <p className="text-[0.65rem] text-center flex items-center justify-center gap-1">
+                {translatedQuestion}
+                <Lightbulb
+                  className="w-4 h-4 text-yellow-300 cursor-pointer"
+                  onClick={handleShowTip}
+                  aria-label={t("show_tip")}
+                />
+              </p>
+              {currentTipMessage && (
+                <span className="text-[0.6rem] text-yellow-200 animate-fade-in-out">{currentTipMessage}</span>
+              )}
               <Input
                 type="text"
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
                 placeholder={t("your_answer")}
-                className="w-full bg-white/80 text-gray-900 placeholder:text-gray-500 border-yellow-400 text-base" // Alterado aqui
+                className="w-full bg-white/80 text-gray-900 placeholder:text-gray-500 border-yellow-400 text-base"
                 disabled={isAnswerCorrect}
               />
               {!isAnswerCorrect && (
